@@ -1,0 +1,130 @@
+# Stormfall
+
+A 3D battle royale that runs in your browser, built with three.js. Drop from a cargo plane, loot chests and llamas, build, fight 30 players and outlast the storm. Or play the Hunger Games, Team Deathmatch, or a map you made yourself.
+
+## Put it on the web (Cloudflare Pages)
+
+Stormfall is plain files, so no server code is needed.
+
+1. In the Cloudflare dashboard go to **Workers & Pages → Create → Pages → Upload assets** (or connect a GitHub repo).
+2. Upload this folder: `index.html`, `stormfall.html`, `assets/` and `sample/`. Leave out the `save/` folder if it's there; it's an old local copy of a profile.
+3. Open your `*.pages.dev` address. `index.html` sends visitors straight to the game.
+
+## Play it on your own computer
+
+You need **Python 3** (already on every Mac) and a modern browser (Chrome recommended).
+
+1. Open a terminal in this folder:
+   ```
+   cd ~/Documents/git/stormfallIO
+   ```
+2. Start a local server:
+   ```
+   ./start.sh
+   ```
+   This opens **http://localhost:8080/stormfall.html** in your browser. To use another port: `./start.sh 9000`.
+3. Press **Ctrl+C** in the terminal to stop it.
+
+If `./start.sh` says "permission denied", run `chmod +x start.sh` once, or just run `python3 -m http.server 8080`.
+
+The game has to be opened through a server (the website, or `./start.sh`), not by double-clicking the HTML file, so the browser can load the 3D models and music in `assets/`.
+
+## Saving
+
+Your progress is saved automatically in your browser: level, XP, Storm Bucks, the skins, tools, gliders, emotes and sidekicks you own, settings, career stats, the sprites you've found, and every map you made.
+
+Each browser keeps its own save. To move your progress to another browser or computer, open **Settings → Save**, click **Download save file**, then click **Load save file** on the other browser. Clearing your browser's site data deletes the save, so download a copy now and then.
+
+## Game modes
+
+| Mode | What it is |
+|---|---|
+| **Battle Royale** | 30 players, a cargo plane drop, building, loot and a shrinking storm. Last one standing wins. |
+| **No Build Battle Royale** | The same without building. Shields recharge when you avoid damage. |
+| **Hunger Games** | 36 tributes on pedestals around the Cornucopia. Districts, the Careers, chests that take 2 seconds to open, sponsors, a feast, a chest refill and a final deathmatch. |
+| **Team Deathmatch** | 12 vs 12 in the City. Respawns, infinite ammo, first team to 30 eliminations. |
+| **My Maps** | Build your own island in the map editor and play a Battle Royale on it. |
+
+## Controls
+
+| Key | Action |
+|---|---|
+| W A S D | Move · Shift sprint · Ctrl crouch / slide · Space jump |
+| Mouse | Left fire · Right aim (snipers use a scope; Exotic rocket launchers lock on) |
+| 1–6 · F | Hotbar slots · sword |
+| E | Open chests and doors, pick up, drive |
+| R | Reload |
+| H | Drop the selected item |
+| Q / B · Z X C V | Build mode · wall, floor, ramp, roof |
+| G | Edit a wall |
+| P | Change camera (third person, close, first person, cinematic) |
+| M | Full map |
+| Tab | Inventory |
+| U | In-match shop (gold from eliminations) |
+| T | Emote |
+| Enter | Chat (with Voice chat on: speak, then press Enter to send) |
+| Esc | Pause menu |
+
+## Features
+
+- **Weapons:** seven rarities (Common to Mythic and Exotic), ballistic bullets, aim assist (Off, Low, Medium, or High, where your bullets curve onto targets) and a sniper scope. Exotic rocket launchers lock on.
+- **Bots:** they loot chests, llamas and supply drops, swap for better gear, heal, build cover, drive cars and chat (with optional voice).
+- **Sidekicks:** buyable pets that follow you and fight in short bursts. One per match, in Battle Royale and No Build only.
+- **Sprites:** ultra-rare elemental creatures (Air, Water, Fire, Earth) that give you a power for the match. Track the ones you've found in the Sprites tab.
+- **Shop and progress:** an Item Shop, Locker, Battle Pass, Career stats and Storm Bucks (150 for each win).
+- **Map editor:** sculpt hills, paint the ground, and place houses, towers, build pieces, cars, chests, loot llamas, sprites and named places.
+
+Your profile, settings and maps are saved in your browser (localStorage).
+
+## Project layout
+
+```
+index.html            sends visitors to the game (the website's front page)
+stormfall.html        the whole game (HTML, CSS and JavaScript)
+start.sh              starts a local server for playing on your own computer
+assets/js/            three.js r128, GLTFLoader, SkeletonUtils
+assets/models/        character models (chars/), sidekick models (pets/), Mixamo / three.js sample models
+assets/music/         soundtrack
+sample/sample.html    the original sample version
+```
+
+## Credits
+
+### Game
+- **Main updated version:** [krishnasaigaruda](https://github.com/krishnasaigaruda)
+- **Sample version:** [crasebot1234](https://github.com/crasebot1234). Play it at `sample/sample.html`.
+
+### Character models (via [Poly Pizza](https://poly.pizza))
+| Model | Author | License |
+|---|---|---|
+| [Adventurer](https://poly.pizza/m/5EGWBMpuXq) | Quaternius | CC0 1.0 |
+| [Punk](https://poly.pizza/m/djXoqejw6w) | Quaternius | CC0 1.0 |
+| [Hoodie Character](https://poly.pizza/m/gKLBoRsyKe) | Quaternius | CC0 1.0 |
+| [Business Man](https://poly.pizza/m/JFrLIKqvCH) | Quaternius | CC0 1.0 |
+| [Woman in Tank Top](https://poly.pizza/m/XqzeZGB7iU) | Quaternius | CC0 1.0 |
+| [Hooded Adventurer](https://poly.pizza/m/y9KWOVG21R) | Quaternius | CC0 1.0 |
+| [Character Soldier](https://poly.pizza/m/PpLF4rt4ah) | Quaternius | CC0 1.0 |
+| [Character Enemy](https://poly.pizza/m/mdGe4IN31v) | Quaternius | CC0 1.0 |
+| [Rigged Character](https://poly.pizza/m/yiQDOLP4Ry) | Rafael | CC0 1.0 |
+| [Sci Fi Character](https://poly.pizza/m/4pUXv5V8kq) | Quaternius | CC-BY 3.0 |
+| [Soldier](https://poly.pizza/m/oAArCNHjFB) | Quaternius | CC-BY 3.0 |
+| [Witch](https://poly.pizza/m/QBEOV9ZUT8) | Quaternius | CC-BY 3.0 |
+| [Suit](https://poly.pizza/m/sOUciDsoVV) | Quaternius | CC-BY 3.0 |
+| [Zombie](https://poly.pizza/m/22K0aSZkHV) | Quaternius | CC-BY 3.0 |
+| [Soldier](https://poly.pizza/m/9wbCF0iWpu) | J-Toastie | CC-BY 3.0 |
+| [Animated Character Base](https://poly.pizza/m/AZzoJo1FBm) | J-Toastie | CC-BY 3.0 |
+| [Rigged Astronaut](https://poly.pizza/m/0oBRDJ9Zl9) | J-Toastie | CC-BY 3.0 |
+
+Soldier, Michelle and X Bot come from Mixamo via the [three.js examples](https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf), as does the Ready Player Me sample avatar.
+
+### Sidekick models (via [Poly Pizza](https://poly.pizza))
+Shiba Inu, Husky, Wolf, Fox, Cat, Birb and Dragon, all by **Quaternius**, CC0 1.0.
+
+### Music
+"Exhilarate", "Volatile Reaction", "Sneaky Adventure" and "Hitman" by **Kevin MacLeod** ([incompetech.com](https://incompetech.com)), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+### Code and fonts
+- [three.js](https://threejs.org) by the three.js authors, MIT License.
+- [Barlow / Barlow Condensed](https://fonts.google.com/specimen/Barlow) by Jeremy Tribby, SIL Open Font License.
+
+Everything else (terrain, buildings, vehicles, weapons, effects and sounds) is generated in code.
