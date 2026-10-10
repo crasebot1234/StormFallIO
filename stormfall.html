@@ -448,6 +448,24 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
 #flare i:nth-of-type(2){width:26px;height:26px;background:rgba(255,200,120,.22)}
 #flare i:nth-of-type(3){width:110px;height:110px;background:radial-gradient(circle,rgba(160,120,255,.16),rgba(160,120,255,0) 70%)}
 #flare i:nth-of-type(4){width:44px;height:44px;background:radial-gradient(circle,rgba(120,255,200,.2),rgba(120,255,200,0) 70%)}
+
+/* ---------- home screen on short screens (phones in landscape) ---------- */
+@media (max-height:560px){
+  .topbar{flex-wrap:nowrap;gap:10px;padding:6px max(10px,env(safe-area-inset-left)) 6px max(10px,env(safe-area-inset-left))}
+  .brand{font-size:20px;flex:none}
+  #tabs{flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  #tabs::-webkit-scrollbar{display:none}
+  #tabs button{font-size:13px;padding:6px 8px;flex:none}#tabs button.on::after{left:6px;right:6px}
+  .wallet{gap:6px;flex:none}.wallet span{font-size:13px;padding:3px 9px}
+  .tab{padding:10px max(16px,env(safe-area-inset-left))}
+  .eyebrow{font-size:10px;margin-bottom:2px}
+  .logo{font-size:46px}
+  .tag{display:none}
+  .playrow{gap:10px}
+  .modecard{padding:7px 12px;min-width:0}.modecard b{font-size:20px}.modecard label{margin-top:3px}
+  #play.btn{font-size:24px;padding:9px 34px}
+  .pane{padding:12px!important}.pane h3{font-size:22px}
+}
 </style>
 </head>
 <body>
