@@ -750,7 +750,7 @@ function cmH(x,z){if(!CM)return 4;const fx=(x+CM_HALF)/CM_STEP,fz=(z+CM_HALF)/CM
 const MODES={
   br:{id:'br',name:'Battle Royale',desc:'30 players, plane drop, build, loot, outlast the storm.',world:'island',build:true,plane:true,storm:true,players:30},
   nobuild:{id:'nobuild',name:'No Build Battle Royale',desc:'Battle Royale without building. Shields recharge when you avoid damage.',world:'island',build:false,plane:true,storm:true,players:30,regen:true},
-  hg:{id:'hg',name:'Hunger Games',desc:'36 tributes on pedestals around the Cornucopia. Bloodbath, sponsors, a feast, the cannon. One victor.',world:'arena',build:false,plane:false,storm:true,players:36,hunger:3},
+  hg:{id:'hg',name:'Hunger Games',desc:'36 tributes, no storm. A closing force field, hidden traps, rigged chests, Peacekeeper drones and the Gamemakers\' fires, fog and tracker jackers. Build to survive; the mutts drive the last ones to the Cornucopia.',world:'arena',build:true,plane:false,storm:false,players:36,hunger:3},
   tdm:{id:'tdm',name:'Team Deathmatch',desc:'12 vs 12 in the City. Respawns, loadouts, first team to 30 eliminations wins.',world:'city',build:false,plane:false,storm:false,players:24,teams:true,respawn:true,target:30,time:480}};
 const SAVED_MODE=(()=>{try{return sessionStorage.getItem('stormfall.mode')||'br';}catch(e){return 'br';}})();
 MODES.custom={id:'custom',name:CM?CM.meta.name:'My Map',desc:'Your own map from My Maps.',world:'custom',build:CM?CM.meta.build!==false:true,plane:true,storm:true,players:CM?(CM.meta.bots??15)+1:16,regen:CM?CM.meta.build===false:false};
@@ -1437,7 +1437,8 @@ function openChest(ch,c){if(ch.opened)return;if(c&& c.ai){c.ai.lootSpot={x:ch.x,
     for(let i=0;i<3;i++){const gi=randomGun(3);spawnPickup(gi,ch.x,ch.y+1,ch.z,true);spawnPickup(ammoFor(gi.id),ch.x,ch.y+1,ch.z,true);}
     spawnPickup({type:'heal',id:'shield',r:2,count:1},ch.x,ch.y+1,ch.z,true);spawnPickup({type:'heal',id:'slurp',r:3,count:1},ch.x,ch.y+1,ch.z,true);spawnPickup({type:'throw',id:'pad',r:3,count:1},ch.x,ch.y+1,ch.z,true);
     for(const m of MAT_ORDER)spawnPickup({type:'mat',id:m,count:150},ch.x,ch.y+1,ch.z,true);spawnPickup({type:'gold',count:150},ch.x,ch.y+1,ch.z,true);spawnPickup({type:'food',id:'pizza',r:2,count:1},ch.x,ch.y+1,ch.z,true);return;}
-ch.opened=true;ch.g.remove(ch.sp);if(ch.rays)ch.g.remove(ch.rays);if(ch.key)ch.key.material=SM('#a8781c',.4,.8);
+if(ch.trap&& MODE.id==='hg')hzSpringChest(ch,c);
+  ch.opened=true;ch.g.remove(ch.sp);if(ch.rays)ch.g.remove(ch.rays);if(ch.key)ch.key.material=SM('#a8781c',.4,.8);
   if(c&& c.pos.distanceToSquared(camera.position)<3600){boomLight.color.copy(C('#ffc860'));boomLight.position.set(ch.x,ch.y+1.2,ch.z);boomLight.intensity=Math.max(boomLight.intensity,18);}
   // an ordinary chest: one main item (usually a gun) with its ammo, maybe one small extra, a few materials and a little gold
   spawnPickup({type:'gold',count:randi(8,25)*(ch.supply?4:1)},ch.x,ch.y+.8,ch.z,true);
@@ -1445,6 +1446,7 @@ ch.opened=true;ch.g.remove(ch.sp);if(ch.rays)ch.g.remove(ch.rays);if(ch.key)ch.k
   else spawnPickup(Math.random()<.6?randomHeal():{type:'food',id:pick(['pizza','meat']),r:2,count:1},ch.x,ch.y+.8,ch.z,true);
   if(ch.supply||Math.random()<.4)spawnPickup(Math.random()<.65?randomHeal():grenadeItem(),ch.x,ch.y+.8,ch.z,true);
   if(MODE.build||ch.supply)spawnPickup({type:'mat',id:pick(MAT_ORDER),count:ch.supply?100:30},ch.x,ch.y+.8,ch.z,true);
+  if(ch.cache){const g2=randomGun(4);spawnPickup(g2,ch.x,ch.y+.8,ch.z,true);spawnPickup({type:'heal',id:'shield',r:3,count:2},ch.x,ch.y+.8,ch.z,true);spawnPickup({type:'heal',id:'medkit',r:2,count:1},ch.x,ch.y+.8,ch.z,true);}
   if(ch.supply){const g2=randomGun(3);spawnPickup(g2,ch.x,ch.y+.8,ch.z,true);spawnPickup(ammoFor(g2.id),ch.x,ch.y+.8,ch.z,true);spawnPickup({type:'heal',id:'shield',r:2,count:1},ch.x,ch.y+.8,ch.z,true);}
   for(let i=0;i<20;i++)glow.spawn(ch.x+rand(-.4,.4),ch.y+.7,ch.z+rand(-.4,.4),rand(-1,1),rand(1,3),rand(-1,1),rand(.5,1),.25,.05,3,2.2,.6,1,-1,.5);
   sfxAt('chest',ch.x,ch.y,ch.z);}
@@ -1937,7 +1939,7 @@ function updateBullets(dt){
   for(const t of tracerPool)if(t.used&& t.fade){t.life-=dt;if(t.life<=0){t.fade=false;freeTracer(t);}}
 }
 function applyHit(c,h,dmg,W,hitChars,dir){
-  const ud=h.ud;if(ud.pet){damagePet(ud.pet,dmg,c);impactFX(h.point,'char');return;}
+  const ud=h.ud;if(ud.pet){damagePet(ud.pet,dmg,c);impactFX(h.point,'char');return;}if(ud.mutt){damageMutt(ud.mutt,dmg,c);impactFX(h.point,'char');return;}if(ud.drone){damageDrone(ud.drone,dmg,c);impactFX(h.point,'metal');sfxAt('impact',h.point.x,h.point.y,h.point.z);return;}
   if(ud.door){damageDoor(ud.door,dmg);impactFX(h.point,'wood');sfxAt('impact',h.point.x,h.point.y,h.point.z);return;}
   if(ud.vehicle){damageVehicle(ud.vehicle,dmg,c);impactFX(h.point,'metal');sfxAt('impact',h.point.x,h.point.y,h.point.z);return;}
   if(!ud.char)hitDecal(h);
@@ -1951,6 +1953,7 @@ function swingPickaxe(c,origin,dir,near){
   if(c===player){sfx('swing');swordTrailReset();}
   {let near=false;for(const o of chars)if(o!==c&& o.alive&& o.pos.distanceToSquared(c.pos)<2.6)near=true;if(c.onGround&& c.state==='ground'&& !near){c.vel.x+=dir.x*2.4;c.vel.z+=dir.z*2.4;}}
   const h=castRay(origin,dir,near+2.6,c,near);shatterAlong(origin,dir,h.ud?h.dist+.3:near+2.6);
+  if(h.ud&& h.ud.mutt){damageMutt(h.ud.mutt,c===player?40:25,c);impactFX(h.point,'char');sfxAt('pickhit',h.point.x,h.point.y,h.point.z);return;}
   if(h.ud&& h.ud.pet){damagePet(h.ud.pet,c===player?30:20,c);impactFX(h.point,'char');sfxAt('pickhit',h.point.x,h.point.y,h.point.z);return;}
   // generous melee: an enemy slightly off the crosshair still gets hit
   let tgt=h.ud&& h.ud.char?h.ud.char:null;
@@ -1989,7 +1992,7 @@ function eliminate(t,att,weapon){
   t.death={t:0,ang:.05,av:.6+Math.random()*.5,dir:sgn,vx:t.vel.x*.5+hd.x*1.5,vz:t.vel.z*.5+hd.z*1.5};
   if(t.backGun&& t.backGun.parent)t.backGun.parent.remove(t.backGun);if(t.held&& t.held.parent)t.held.parent.remove(t.held);if(t.pickaxe.parent)t.pickaxe.parent.remove(t.pickaxe);t.m.glider.visible=false;
   const dist=att&& att!==t?Math.round(att.pos.distanceTo(t.pos)):0;let msg;
-  if(!att||att===t)msg=`<b>${t.name}</b> ${weapon==='Storm'?'was lost in the storm':weapon==='Fall'?'fell to their death':'eliminated themselves'}`;
+  if(!att||att===t)msg=`<b>${t.name}</b> ${weapon==='Storm'?'was lost in the storm':weapon==='Fall'?'fell to their death':weapon==='Forest fire'?'burned in the forest fire':weapon==='Poison fog'?'was caught in the poison fog':weapon==='Tracker jackers'?'was stung by tracker jackers':weapon==='Mutts'?'was torn apart by mutts':weapon==='Fireball'?'was hit by a Gamemaker fireball':weapon==='Landmine'?'stepped off the pedestal too early':weapon==='Hidden mine'?'stepped on a hidden mine':weapon==='Spike trap'?'fell into a spike pit':weapon==='Trapped chest'?'opened a trapped chest':weapon==='Trap gas'?'choked on trap gas':weapon==='Peacekeeper drone'?'was shot by a Peacekeeper drone':weapon==='Drone explosion'?'was caught in a drone explosion':weapon==='Force field'?'was fried by the force field':weapon==='Nightlock'?'ate nightlock berries':'eliminated themselves'}`;
   else{att.kills++;msg=`<b>${att.name}</b> <i>${weapon}</i> <b>${t.name}</b> <em>${dist}m</em>`;}
   if(t.sprite){t.sprite=null;if(t===player)renderSpriteChip();}t.burn=null;/* a sprite is lost with its owner, never looted */
   feed(msg,att===player||t===player);if(t.emote)t.emote=null;if(t.buildQ)t.buildQ.length=0;
@@ -2055,7 +2058,7 @@ function updateArc(show,dir){if(!arcLine){const g=new THREE.BufferGeometry();g.s
   const lp=land||sim.pos;arcLine.mark.position.set(lp.x,lp.y+.06,lp.z);arcLine.mark.scale.setScalar(1+.15*Math.sin(gameTime*8));arcLine.mark.visible=true;}
 // explosions
 let FIREBALL_G;const fireballs=[];
-function explode(p,owner,dmgMax,weapon){explodeExtras(p,owner);boomLight.color.copy(C('#ff9a40'));
+function explode(p,owner,dmgMax,weapon){explodeExtras(p,owner);if(MODE.id==='hg'&& weapon!=='Drone explosion')hzBlast(p);boomLight.color.copy(C('#ff9a40'));
   if(!FIREBALL_G)FIREBALL_G=new THREE.IcosahedronGeometry(1,2);
   for(let i=0;i<3;i++){const fb=new THREE.Mesh(FIREBALL_G,new THREE.MeshBasicMaterial({color:new THREE.Color(6,2.6+i*.6,.6),transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));fb.position.copy(p).add(new V3(rand(-.6,.6),rand(0,.8),rand(-.6,.6)));fb.scale.setScalar(.3);scene.add(fb);fireballs.push({m:fb,t:-i*.05,s:rand(3.5,5)});}
   for(let i=0;i<8;i++)spawnChunk(p.x,p.y+.3,p.z,'rock',rand(-7,7),rand(4,10),rand(-7,7));
@@ -2421,6 +2424,13 @@ function moveExtras(p,dt,wx,wz,speed,mz,fx,fz){
 function drawMapExtras(ctx,toX,toY){ctx.save();
   for(const v of vehicles){if(v.dead)continue;ctx.save();ctx.translate(toX(v.pos.x),toY(v.pos.z));ctx.rotate(-v.yaw);ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillRect(-2.5,-4,5,8);ctx.restore();}
   for(const d of drops){if(d.ch&& d.ch.opened)continue;const x=toX(d.x),y=toY(d.z);ctx.fillStyle='#9b6bff';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.fillRect(x-5,y-5,10,10);ctx.strokeRect(x-5,y-5,10,10);}
+  if(MODE.id==='hg'){for(const e of HZ.ev){ctx.save();if(e.kind==='jackers'){ctx.fillStyle='rgba(255,200,40,.9)';ctx.beginPath();ctx.arc(toX(e.pos.x),toY(e.pos.z),5,0,7);ctx.fill();}
+      else{const px=-e.d.z,pz=e.d.x,f=e.front,b=e.front-e.depth;ctx.fillStyle=e.kind==='fire'?'rgba(255,90,20,.55)':'rgba(200,190,230,.5)';ctx.beginPath();
+        const P=(al,sd)=>[toX(e.p.x+e.d.x*al+px*sd),toY(e.p.z+e.d.z*al+pz*sd)];[[f,-e.half],[f,e.half],[b,e.half],[b,-e.half]].forEach(([al,sd],i)=>{const [x,y]=P(al,sd);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.fill();}ctx.restore();}
+    if(HZ.border){ctx.strokeStyle='rgba(120,200,255,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(toX(HG.cx),toY(HG.cz),Math.abs(toX(HG.cx+hzBorderR())-toX(HG.cx)),0,Math.PI*2);ctx.stroke();}
+    for(const d of HZ.drones)if(!d.dead){ctx.fillStyle='#ff3b30';ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(toX(d.pos.x),toY(d.pos.z)-5);ctx.lineTo(toX(d.pos.x)+4,toY(d.pos.z)+3);ctx.lineTo(toX(d.pos.x)-4,toY(d.pos.z)+3);ctx.closePath();ctx.fill();ctx.stroke();}
+    if(HZ.ringR>0){ctx.strokeStyle='#ff4d3a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(toX(HG.cx),toY(HG.cz),Math.abs(toX(HG.cx+HZ.ringR)-toX(HG.cx)),0,Math.PI*2);ctx.stroke();}
+    for(const m of HZ.mutts)if(!m.dead){ctx.fillStyle='#8b0000';ctx.beginPath();ctx.arc(toX(m.pos.x),toY(m.pos.z),3,0,7);ctx.fill();}}
   for(const c of chars)if(c!==player&& c.alive&& c.spottedT>gameTime){ctx.fillStyle='#ff4d4d';ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.beginPath();ctx.arc(toX(c.pos.x),toY(c.pos.z),3.5,0,7);ctx.fill();ctx.stroke();}
   if(ping.on){const x=toX(ping.pos.x),y=toY(ping.pos.z);ctx.fillStyle='#ffd23f';ctx.strokeStyle='#000';ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+6,y);ctx.lineTo(x,y+7);ctx.lineTo(x-6,y);ctx.closePath();ctx.fill();ctx.stroke();}
   ctx.restore();}
@@ -2896,6 +2906,11 @@ function botThink(b){
         for(const ch of chests){if(ch.opened||ch.supply||Math.hypot(ch.x-HG.cx,ch.z-HG.cz)>30)continue;if(chars.some(o=>o!==b&& o.alive&& o.opening&& o.opening.ch===ch))continue;const d=Math.hypot(ch.x-b.pos.x,ch.z-b.pos.z)+((ch.x*7+ch.z*13+b.id*31)%9+9)%9;if(d<bd){bd=d;best={ch,x:ch.x,z:ch.z};}}
         for(const pk of pickups){if(!pk.alive||Math.hypot(pk.x-HG.cx,pk.z-HG.cz)>30||!botWants(b,pk.item))continue;const d=Math.hypot(pk.x-b.pos.x,pk.z-b.pos.z)+Math.random()*4;if(d<bd){bd=d;best={pk,x:pk.x,z:pk.z};}}
         if(best){ai.goalObj=best;ai.goal=new V3(best.x,0,best.z);}else{ai.hgPlan='flee';ai.goal=null;}}return;}}
+  // Gamemaker traps beat everything else: run from fire, fog and tracker jackers; in the finale get back inside the ring
+  if(MODE.id==='hg'&& HG.began){const th=hzThreat(b.pos.x,b.pos.z);
+    if(th){const L=Math.hypot(th.dx,th.dz)||1;ai.goal=new V3(b.pos.x+th.dx/L*32,0,b.pos.z+th.dz/L*32);ai.goalObj=null;ai.harvest=null;ai.fleeHz=gameTime;return;}
+    if(HZ.border&& Math.hypot(b.pos.x-HG.cx,b.pos.z-HG.cz)>hzBorderR()-28){const a=Math.atan2(b.pos.z-HG.cz,b.pos.x-HG.cx),r=hzBorderR()*.6;ai.goal=new V3(HG.cx+Math.cos(a)*r,0,HG.cz+Math.sin(a)*r);ai.goalObj=null;ai.harvest=null;return;}
+    if(HG.dm&& HZ.ringR>0&& Math.hypot(b.pos.x-HG.cx,b.pos.z-HG.cz)>HZ.ringR-3){const a=Math.atan2(b.pos.z-HG.cz,b.pos.x-HG.cx),r=HZ.ringR*.5;ai.goal=new V3(HG.cx+Math.cos(a)*r,0,HG.cz+Math.sin(a)*r);ai.goalObj=null;ai.harvest=null;return;}}
   // tributes keep a low profile early on: they only pick fights close up (or when attacked) until the arena thins out
   let best=null,bd=1e9;const range=MODE.id==='hg'&& !HG.dm?(b.hgAlly==='career'&& gameTime>HG.startT+20?35:b.hider&& aliveCount>6?14:gameTime<HG.startT+180?28:aliveCount>8?40:80):b.slots.some(s=>s&& s.id==='sniper')?170:115;
   for(const c of chars){if(c===b||!c.alive||(c.state!=='ground'&& c.state!=='swim')||(MODE.teams&& c.team===b.team)||(MODE.id==='hg'&& hgAllies(b,c))||(ai.ignoreE&& ai.ignoreE.get(c)>gameTime&& b.lastAttacker!==c))continue;let d=c.pos.distanceTo(b.pos);
@@ -3213,7 +3228,7 @@ function updateHUD(dt){
   const sky=p.alive&&(p.state==='freefall'||p.state==='glide');$('alt').classList.toggle('hidden',!sky);if(sky){const hh=Math.max(0,p.pos.y-terrainH(p.pos.x,p.pos.z));$('altTxt').textContent=Math.round(hh)+'m';$('altMark').style.top=(100-clamp(hh/180,0,1)*100)+'%';}
   $('speedFx').style.opacity=p.alive&& p.state==='freefall'?(p.dive?.9:.45):(p.vehicle&& p.vehicle.boosting?.5:p.sprint&& Math.hypot(p.vel.x,p.vel.z)>8?.12:0);
   $('cross').classList.toggle('on',AA.on);
-  let st='';if(!storm.active)st=MODE.plane?`Drop window <b>${fmtT(ship.dur-ship.t)}</b>`:`<b>${MODE.name}</b>`;else if(storm.done)st='<b>Final circle</b>';else if(storm.shrinking)st=`Storm closing <b>${fmtT(storm.t)}</b>`;else st=`Zone shrinks in <b>${fmtT(storm.t)}</b>`;
+  let st='';if(MODE.id==='hg')st=hgStatus();else if(!storm.active)st=MODE.plane?`Drop window <b>${fmtT(ship.dur-ship.t)}</b>`:`<b>${MODE.name}</b>`;else if(storm.done)st='<b>Final circle</b>';else if(storm.shrinking)st=`Storm closing <b>${fmtT(storm.t)}</b>`;else st=`Zone shrinks in <b>${fmtT(storm.t)}</b>`;
   const dist=Math.hypot(p.pos.x-storm.tcx,p.pos.z-storm.tcz)-storm.tr;if(storm.active&& dist>0)st+=`<br><span class="warn">${Math.round(dist)} m outside the next zone</span>`;$('stormInfo').innerHTML=st;
   if(p.opening){const o=p.opening;if(!keys.KeyE||o.ch.opened||Math.hypot(o.ch.x-p.pos.x,o.ch.z-p.pos.z)>3||p.lastHurt<.05||!p.alive){p.opening=null;}else{o.t-=dt;if(o.t<=0){p.opening=null;openChest(o.ch,p);}}}
   const pr=$('prog');if(p.opening){pr.classList.remove('hidden');$('progFill').style.width=(100*(1-p.opening.t/p.opening.total))+'%';$('progLabel').textContent='Opening chest · hold E';}else if(p.reloading||p.healing){const r=p.reloading||p.healing;pr.classList.remove('hidden');$('progFill').style.width=(100*(1-r.t/r.total))+'%';$('progLabel').textContent=p.reloading?'Reloading':`${r.food?'Eating '+FOOD[r.item.id].name:HEALS[r.item.id].name} · ${r.t.toFixed(1)}s`;}else pr.classList.add('hidden');
@@ -3297,8 +3312,9 @@ function findInteract(){const p=player;const {f}=camVectors();const fl=Math.hypo
   for(const dd of doors){if(!dd.alive||Math.abs(dd.y-p.pos.y)>1.5)continue;consider({door:dd},dd.cx,dd.y+1,dd.cz,2.3,.55);}
   for(const v of vehicles){if(v.dead||v.driver||Math.abs(v.pos.y-p.pos.y)>2)continue;consider({veh:v},v.pos.x,v.pos.y+.8,v.pos.z,v.T.colS+2,.25);}
   for(const v of vendings)if(Math.abs(v.y-p.pos.y)<2)consider({vend:v},v.x,v.y+1,v.z,2.5,.15);
+  if(MODE.id==='hg')for(const b of HZ.bushes)if(!b.picked)consider({bush:b},b.x,b.y+.6,b.z,2.6,.1);
   return best;}
-function interact(){const t=promptTarget,p=player;if(p&& p.vehicle){exitVehicle(p);return;}if(!t||!p.alive||p.state!=='ground')return;if(t.veh){enterVehicle(p,t.veh);return;}if(t.door){toggleDoor(t.door,p);return;}if(t.vend){openShop();return;}
+function interact(){const t=promptTarget,p=player;if(p&& p.vehicle){exitVehicle(p);return;}if(!t||!p.alive||p.state!=='ground')return;if(t.veh){enterVehicle(p,t.veh);return;}if(t.door){toggleDoor(t.door,p);return;}if(t.vend){openShop();return;}if(t.bush){hzForage(t.bush,p);return;}
   if(t.ch){if(MODE.id==='hg'&& !t.ch.llama){p.opening={ch:t.ch,t:2,total:2};sfx('click');return;}openChest(t.ch,p);return;}
   const it=t.pk.item;const left=giveItem(p,it);
   if(!left){removePickup(t.pk,p);sfx('pickup');if(p.sel===0&& it.type==='gun'){const i=p.slots.indexOf(it);if(i>=0)selectSlot(i+1);}return;}
@@ -3359,7 +3375,7 @@ function updatePlayer(dt){
   for(let i=pickups.length-1;i>=0;i--){const pk=pickups[i];if(!pk.alive||pk.t<1)continue;const ty=pk.item.type;if((ty==='ammo'||ty==='mat'||ty==='gold'||ty==='gas')&& Math.hypot(pk.x-p.pos.x,pk.y-p.pos.y-.2,pk.z-p.pos.z)<(ty==='gold'?2.4:1.6)){giveItem(p,pk.item);removePickup(pk,p);if(ty!=='gold')sfx('pickup');}}
   promptTarget=findInteract();const pe=$('prompt');
   if(promptTarget){const pk=promptTarget.pk;const full=!p.slots.some(s=>!s);const stack=pk&&(pk.item.type==='heal'||pk.item.type==='throw')&& p.slots.some(s=>s&& s.id===pk.item.id);
-    const txt=promptTarget.vend?'Use vending machine':promptTarget.door?(Math.abs(promptTarget.door.target)>.1?'Close door':'Open door'):promptTarget.veh?'Drive '+VTYPES[promptTarget.veh.type].name:promptTarget.ch?(promptTarget.ch.llama?'Break Loot Llama':promptTarget.ch.supply?'Open supply drop':'Open chest'):((full&&!stack)?'Swap for ':'Pick up ')+itemName(pk.item);const col=pk?RAR_COL[pk.item.r||0]:'#ffc04a';
+    const txt=promptTarget.bush?'Pick berries':promptTarget.vend?'Use vending machine':promptTarget.door?(Math.abs(promptTarget.door.target)>.1?'Close door':'Open door'):promptTarget.veh?'Drive '+VTYPES[promptTarget.veh.type].name:promptTarget.ch?(promptTarget.ch.llama?'Break Loot Llama':promptTarget.ch.supply?'Open supply drop':'Open chest'):((full&&!stack)?'Swap for ':'Pick up ')+itemName(pk.item);const col=pk?RAR_COL[pk.item.r||0]:'#ffc04a';
     pe.innerHTML=`<kbd>E</kbd><span style="color:${col}">${txt}</span>`;pe.classList.remove('hidden');}else pe.classList.add('hidden');
 }
 let camOverride=null;
@@ -3450,7 +3466,7 @@ function step(dt){
   separateChars();
   for(const c of chars){if(c.alive){if(c.state!=='ship'){if(c!==player)c.m.root.visible=c.pos.distanceToSquared(camera.position)<Q.dist*Q.dist;animChar(c,dt);}else{c.m.root.visible=!!ship.mesh&& c.pos.distanceToSquared(camera.position)<60*60;if(c.m.root.visible)animChar(c,dt);}c.lastHurt+=dt;}else if(c.m.root.parent)animChar(c,dt);}
   if(Math.random()<dt/22&& aliveCount>3){const b=pick(chars.filter(c=>c!==player&& c.alive&& c.state!=='ship'));const line=b&& contextLine(b);if(line)feed(`<b>${b.name}</b>: ${line}`,false,'chat');}
-  updateMode(dt);updateSidekick(dt);updateSprites(dt);
+  updateMode(dt);updateSidekick(dt);updateSprites(dt);updateHazards(dt);updateArena(dt);
   updateBullets(dt);updateRockets(dt);updateGrenades(dt);updateStorm(dt);updatePieces(dt);updatePickups(dt);updateVacuum(dt);updateChunks(dt);updateTrees(dt);autoQuality(dt);
   if(VM.g)VM.g.visible=false;updateCamera(dt);updateTrail();syncWorld(dt);updateAmbient();updateDmgNums(dt);updateHUD(dt);updateExtras(dt);updateRealism(dt);spaceEdge=ctrlEdge=false;
   mmT-=dt;if(mmT<=0){mmT=.1;drawMap($('minimap').getContext('2d'),200,player.pos.x,player.pos.z,player.state==='ground'?230:520,false);if(mapOpen)drawMap($('bigmapc').getContext('2d'),800,0,0,1000,true);}
@@ -4277,7 +4293,7 @@ function buildCornucopia(p){const y=p.lvl*H;HG.cx=p.x;HG.cz=p.z;HG.y=y;
 // ---------- Hunger Games ----------
 const HG_NAMES=['Ash','Briar','Cato','Dell','Ember','Finch','Glade','Hollis','Ivy','Jett','Kestrel','Lark','Moss','Nyla','Orrin','Pike','Quill','Reed','Sable','Thorne','Umber','Vale','Wren','Yarrow','Alder','Bram','Clove','Dace','Fern','Gale','Hazel','Juniper','Kit','Linden','Marlow','Rowan'];
 function hgAllies(a,b){return !!(a.hgAlly&& a.hgAlly===b.hgAlly&& !(a.hgAlly==='career'&& HG.careersBroken));}
-function setupHG(){
+function setupHG(){hzReset();hzSetup();
   // districts: a boy and a girl from 1-12; you are District 12. Districts 1, 2 and 4 are the Careers.
   const names=HG_NAMES.slice().sort(()=>Math.random()-.5);chars.forEach((c,i)=>{const per=Math.max(1,Math.round(chars.length/12)),d=c===player?12:Math.min(12,1+Math.floor((i-1)/per));c.district=d;if(c!==player)c.name=names[i%names.length]+' · D'+d;
     c.hgAlly=c!==player&&(d===1||d===2||d===4)?'career':null;c.hider=c!==player&& !c.hgAlly&& Math.random()<.65;});
@@ -4298,9 +4314,178 @@ function updateHG(dt){if(!HG.began){const left=HG.startT-gameTime;
     sfx('gong');centerMsg('THE CHESTS HAVE BEEN REFILLED',n+' chests are full again');}
   if(!HG.dm&&((aliveCount<=4&& gameTime>HG.startT+240)||gameTime>HG.startT+540)&& aliveCount>1){HG.dm=true;const alive=chars.filter(c=>c.alive);
     alive.forEach((c,i)=>{if(c.vehicle)exitVehicle(c);const pd=HG.peds[Math.floor(i*HG.peds.length/alive.length)];c.state='ground';c.pos.set(pd.x,pd.y,pd.z);c.vel.set(0,0,0);c.ped=pd;c.opening=null;c.yaw=Math.atan2(-(HG.cx-pd.x),-(HG.cz-pd.z));if(c.ai){c.ai.goal=null;c.ai.goalObj=null;}});
-    if(player.alive)yaw=player.yaw;HG.startT=gameTime+10;HG.began=false;storm.cx=storm.tcx=HG.cx;storm.cz=storm.tcz=HG.cz;storm.r=storm.fromR=34;storm.tr=6;storm.phase=PHASES.length-2;storm.shrinking=false;storm.t=60;storm.dmg=3;
+    if(player.alive)yaw=player.yaw;HG.startT=gameTime+10;HG.began=false;HZ.finalePending=true;
     centerMsg('DEATHMATCH','The final tributes have been returned to the Cornucopia');sfx('cannon');}
+  if(HG.dm&& HG.began&& HZ.finalePending){HZ.finalePending=false;hzStartFinale();}
   if(!HG.feastDone&& !HG.dm&& gameTime>HG.startT+390){HG.feastDone=true;centerMsg('THE FEAST','Supplies are dropping at the Cornucopia. Something everyone needs.');for(let i=0;i<3;i++)spawnDrop(HG.cx+rand(-6,6),HG.cz+rand(-6,6));}}
+
+// ---------- Hunger Games: no storm. The Gamemakers drive tributes with arena traps, and mutts herd the last ones to the Cornucopia ----------
+const HZ={ev:[],nextT:0,order:[],mutts:[],ringR:0,ringMesh:null,lastKind:''};
+function hzReset(){for(const e of HZ.ev)if(e.mesh)scene.remove(e.mesh);HZ.ev.length=0;
+  if(HZ.traps){for(const t of HZ.traps){scene.remove(t.g);if(t.net)scene.remove(t.net);}HZ.traps.length=0;for(const d of HZ.drones)hzKillDrone(d,true);HZ.drones.length=0;for(const b of HZ.bushes)scene.remove(b.m);HZ.bushes.length=0;HZ.gas.length=0;
+    for(const ch of HZ.caches){scene.remove(ch.g);arrRemove(chests,ch);}HZ.caches.length=0;if(HZ.border){scene.remove(HZ.border.mesh);HZ.border=null;}for(const c of chars){c.snare=null;}}for(const m of HZ.mutts)hzKillMutt(m,true);HZ.mutts.length=0;HZ.ringR=0;if(HZ.ringMesh){scene.remove(HZ.ringMesh);HZ.ringMesh=null;}HZ.nextT=0;}
+// a moving wall (forest fire or poison fog) sweeping across the arena from one side
+function hzWall(kind){const a=rand(0,6.28),d=new V3(-Math.cos(a),0,-Math.sin(a));const start=new V3(HG.cx+Math.cos(a)*ISLAND*.95,0,HG.cz+Math.sin(a)*ISLAND*.95);
+  const e={kind,d,p:start,front:0,speed:kind==='fire'?3.4:2.4,depth:kind==='fire'?7:20,half:kind==='fire'?120:170,t:0,life:kind==='fire'?70:85,dps:kind==='fire'?9:5,ballT:2};HZ.ev.push(e);hzCurtain(e);
+  centerMsg(kind==='fire'?'THE GAMEMAKERS HAVE SET THE FOREST ON FIRE':'POISON FOG IS ROLLING IN',kind==='fire'?'Run from the flames':'Get away from the fog before it reaches you');sfx('alert');}
+function hzSwarm(){const live=chars.filter(c=>c.alive&& c.state==='ground');if(!live.length)return;const t=pick(live);const a=rand(0,6.28);
+  HZ.ev.push({kind:'jackers',pos:new V3(t.pos.x+Math.cos(a)*35,t.pos.y+2,t.pos.z+Math.sin(a)*35),tgt:t,t:0,life:28,dps:7});
+  centerMsg('TRACKER JACKERS','A swarm has been released. Outrun it or get into the water');sfx('alert');}
+// a visible curtain for a wall event: rows of ground-hugging vertical strips (flames, or a fog bank) that follow the front
+const HZ_TEX={};function hzTex(kind){if(HZ_TEX[kind])return HZ_TEX[kind];const c=document.createElement('canvas');c.width=256;c.height=128;const x=c.getContext('2d');
+  if(kind==='fire'){for(let i=0;i<70;i++){const cx=Math.random()*256,w=rand(10,30),h=rand(50,125);const g=x.createLinearGradient(0,128,0,128-h);g.addColorStop(0,'rgba(255,245,190,1)');g.addColorStop(.25,'rgba(255,200,60,1)');g.addColorStop(.6,'rgba(255,110,10,.95)');g.addColorStop(.88,'rgba(220,50,0,.6)');g.addColorStop(1,'rgba(90,20,0,0)');
+      x.fillStyle=g;x.beginPath();x.moveTo(cx-w,128);x.quadraticCurveTo(cx-w*.6,128-h*.6,cx+rand(-6,6),128-h);x.quadraticCurveTo(cx+w*.6,128-h*.6,cx+w,128);x.fill();
+      if(cx<30){x.save();x.translate(256,0);x.fill();x.restore();}if(cx>226){x.save();x.translate(-256,0);x.fill();x.restore();}}}
+  else{const g=x.createLinearGradient(0,128,0,0);g.addColorStop(0,'rgba(215,205,235,.95)');g.addColorStop(.6,'rgba(190,180,215,.6)');g.addColorStop(1,'rgba(170,160,200,0)');x.fillStyle=g;x.fillRect(0,0,256,128);
+    for(let i=0;i<40;i++){const cx=Math.random()*256,cy=rand(20,110),r=rand(15,40);const rg=x.createRadialGradient(cx,cy,0,cx,cy,r);rg.addColorStop(0,'rgba(240,235,255,.35)');rg.addColorStop(1,'rgba(240,235,255,0)');x.fillStyle=rg;x.fillRect(cx-r,cy-r,r*2,r*2);}}
+  const t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;return HZ_TEX[kind]=t;}
+function hzCurtain(e){const fire=e.kind==='fire',step=4,cols=Math.ceil(e.half*2/step)+1,rows=fire?[0,2.5,5]:[0,e.depth*.35,e.depth*.7,e.depth];
+  const n=rows.length*cols,pos=new Float32Array(n*2*3),uv=new Float32Array(n*2*2),idx=[];
+  for(let r=0;r<rows.length;r++)for(let i=0;i<cols;i++){const v=(r*cols+i)*2;uv.set([i*.18+r*.37,0,i*.18+r*.37,1],v*2);if(i<cols-1)idx.push(v,v+2,v+1,v+1,v+2,v+3);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.setIndex(idx);
+  const tex=hzTex(e.kind).clone();tex.needsUpdate=true;
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:!fire,opacity:fire?.95:.9,color:fire?new THREE.Color(1.35,1.15,1):new THREE.Color(.78,.95,.62)}));
+  m.frustumCulled=false;m.renderOrder=3;scene.add(m);e.mesh=m;e.rows=rows;e.cols=cols;e.step=step;}
+function hzCurtainUpdate(e){const m=e.mesh;if(!m)return;const P=m.geometry.attributes.position.array,px=-e.d.z,pz=e.d.x,fire=e.kind==='fire',fade=Math.min(1,e.t/3,(e.life-e.t)/4);
+  for(let r=0;r<e.rows.length;r++){const al=e.front-e.rows[r],H=fire?(r===0?7:r===1?9:5):(r===0?7:12);
+    for(let i=0;i<e.cols;i++){const sd=-e.half+i*e.step;const x=e.p.x+e.d.x*al+px*sd,z=e.p.z+e.d.z*al+pz*sd;const y=terrainH(x,z)-.3;const h=H*fade*(fire?.8+.35*Math.sin(gameTime*7+i*1.7+r*2.3):1);
+      const v=(r*e.cols+i)*6;P[v]=x;P[v+1]=y;P[v+2]=z;P[v+3]=x;P[v+4]=y+Math.max(.1,h);P[v+5]=z;}}
+  m.geometry.attributes.position.needsUpdate=true;m.material.map.offset.x+=(fire?.35:.04)*(1/60);if(fire)m.material.map.offset.y=Math.sin(gameTime*11)*.03;}
+function hzInWall(e,x,z){const rx=x-e.p.x,rz=z-e.p.z;const along=rx*e.d.x+rz*e.d.z,side=Math.abs(rx*-e.d.z+rz*e.d.x);return side<e.half&& along<e.front&& along>e.front-e.depth;}
+// how close a point is to the leading edge of a wall that is heading its way (for bots deciding to flee)
+function hzThreat(x,z){let best=null;
+  for(const g of HZ.gas)if(Math.hypot(g.x-x,g.z-z)<g.r+3)return {dx:x-g.x,dz:z-g.z};
+  for(const d of HZ.drones)if(!d.dead&& d.tgt&& Math.hypot(d.tgt.pos.x-x,d.tgt.pos.z-z)<1&& Math.hypot(d.pos.x-x,d.pos.z-z)<35)return {dx:x-d.post.x,dz:z-d.post.z};for(const e of HZ.ev){if(e.kind==='jackers'){const d=Math.hypot(e.pos.x-x,e.pos.z-z);if(d<22)best={dx:x-e.pos.x,dz:z-e.pos.z};continue;}
+    const rx=x-e.p.x,rz=z-e.p.z;const along=rx*e.d.x+rz*e.d.z,side=Math.abs(rx*-e.d.z+rz*e.d.x);if(side<e.half+10&& along>e.front-e.depth&& along<e.front+28)best={dx:e.d.x,dz:e.d.z,wall:true};}return best;}
+function hzMutt(x,z){const m=makePet('wolf');if(!m)return null;m.root.scale.multiplyScalar(1.9);m.root.updateMatrixWorld(true);m.root.traverse(o=>{if(o.isMesh&& o.material){o.material.color&& o.material.color.multiplyScalar(.35);o.material.emissive=C('#3a0000');}});
+  const hb=new THREE.Mesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),HB_MAT);hb.scale.set(1,1.4,2.4);m.wrap.add(hb);m.hb=hb;m.hp=160;m.dead=false;m.isMutt=true;m.def={...m.def,h:1.4,name:'Mutt'};hb.userData={mutt:m};hittables.push(hb);charHB.push(hb);
+  m.pos.set(x,terrainH(x,z),z);m.wrap.position.copy(m.pos);scene.add(m.wrap);m.atkCd=0;m.atkT=0;HZ.mutts.push(m);return m;}
+function hzKillMutt(m,silent){if(m.dead&& !silent)return;m.dead=true;scene.remove(m.wrap);arrRemove(hittables,m.hb);arrRemove(charHB,m.hb);if(!silent){petPoof(m.pos.x,m.pos.y,m.pos.z,[2.6,.6,.4]);sfxAt('break',m.pos.x,m.pos.y,m.pos.z);}}
+function damageMutt(m,dmg,att){if(m.dead||dmg<=0)return;m.hp-=dmg;if(att===player){dmgNum(new V3(m.pos.x,m.pos.y+2,m.pos.z),Math.round(dmg),'');hitmarker(false);}if(m.hp<=0){hzKillMutt(m);if(att===player)centerMsg('','You killed a mutt');}}
+function hzStartFinale(){HZ.ringR=48;if(!HZ.ringMesh){const c=document.createElement('canvas');c.width=4;c.height=64;const x=c.getContext('2d'),g=x.createLinearGradient(0,64,0,0);g.addColorStop(0,'rgba(255,60,40,.55)');g.addColorStop(.25,'rgba(255,60,40,.22)');g.addColorStop(1,'rgba(255,60,40,0)');x.fillStyle=g;x.fillRect(0,0,4,64);
+    HZ.ringMesh=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,128,1,true).translate(0,.5,0),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,side:THREE.DoubleSide,depthWrite:false,fog:false,color:new THREE.Color(1.6,1.2,1.2)}));HZ.ringMesh.renderOrder=3;scene.add(HZ.ringMesh);}
+  for(let i=0;i<5;i++){const a=i/5*6.28;hzMutt(HG.cx+Math.cos(a)*70,HG.cz+Math.sin(a)*70);}
+  centerMsg('THE MUTTS HAVE BEEN RELEASED','Stay inside the ring around the Cornucopia');sfx('alert');}
+function hgStatus(){if(HG.dm)return HZ.ringR>0?`<b>FINALE</b><br><span class="warn">Mutts hunt anyone outside the ring (${Math.round(HZ.ringR)} m)</span>`:'<b>DEATHMATCH</b>';
+  const cur=HZ.ev.map(e=>e.kind==='fire'?'Forest fire':e.kind==='fog'?'Poison fog':'Tracker jackers');if(cur.length)return `<b>${cur.join(' · ')}</b><br><span class="warn">Get clear of it</span>`;
+  const br=HZ.border&& HG.began&& gameTime-HG.startT>150&& hzBorderR()>130?`<br><span class="warn">Force field closing in: ${Math.round(hzBorderR())} m</span>`:'';
+  return (HZ.nextT?`Gamemaker event in <b>${fmtT(HZ.nextT-gameTime)}</b>`:'<b>Hunger Games</b>')+br;}
+function updateHazards(dt){if(MODE.id!=='hg')return;const near=(x,z,R)=>Math.hypot(x-camera.position.x,z-camera.position.z)<R;
+  if(HG.began&& !HG.dm){if(!HZ.nextT)HZ.nextT=HG.startT+110;if(gameTime>HZ.nextT&& HZ.ev.length<2){HZ.nextT=gameTime+rand(65,95);if(!HZ.order.length)HZ.order=['fire','jackers','fog'].sort(()=>Math.random()-.5);const k=HZ.order.pop();if(k==='jackers')hzSwarm();else hzWall(k);}}
+  for(let i=HZ.ev.length-1;i>=0;i--){const e=HZ.ev[i];e.t+=dt;if(e.t>e.life||HG.dm){if(e.mesh){scene.remove(e.mesh);e.mesh.geometry.dispose();e.mesh.material.map.dispose();e.mesh.material.dispose();}HZ.ev.splice(i,1);continue;}
+    if(e.kind==='jackers'){let t=e.tgt;if(!t||!t.alive){t=e.tgt=chars.filter(c=>c.alive).sort((a,b)=>a.pos.distanceTo(e.pos)-b.pos.distanceTo(e.pos))[0];if(!t)continue;}
+      const to=new V3(t.pos.x-e.pos.x,t.pos.y+1.4-e.pos.y,t.pos.z-e.pos.z);const L=to.length();if(t.state!=='swim'&& L>.5)e.pos.addScaledVector(to.divideScalar(L),Math.min(L,6.6*dt));
+      if(near(e.pos.x,e.pos.z,120))for(let k=0;k<6;k++)glow.spawn(e.pos.x+rand(-1.6,1.6),e.pos.y+rand(-1,1),e.pos.z+rand(-1.6,1.6),rand(-2,2),rand(-1,1),rand(-2,2),rand(.3,.6),.09,.05,2.4,2,.3,1,0,2);
+      for(const c of chars)if(c.alive&& c.state!=='swim'&& c.pos.distanceTo(e.pos)<3.6){c.hzAcc=(c.hzAcc||0)+e.dps*dt;if(c.hzAcc>=3){damageChar(c,c.hzAcc,null,'Tracker jackers',false,null,true);c.hzAcc=0;}}continue;}
+    e.front+=e.speed*dt;const px=-e.d.z,pz=e.d.x;hzCurtainUpdate(e);
+    if(near(e.p.x+e.d.x*e.front,e.p.z+e.d.z*e.front,260))for(let k=0;k<(e.kind==='fire'?26:14);k++){const s=rand(-e.half,e.half),back=rand(0,e.depth);const x=e.p.x+e.d.x*(e.front-back)+px*s,z=e.p.z+e.d.z*(e.front-back)+pz*s;if(!near(x,z,170))continue;const y=terrainH(x,z);
+      if(e.kind==='fire'){glow.spawn(x,y+rand(0,1),z,rand(-.4,.4),rand(2,5),rand(-.4,.4),rand(.5,1.1),rand(.8,1.6),.2,6,2.2,.4,1,-1.5,1);if(Math.random()<.4)smoke.spawn(x,y+2,z,rand(-.5,.5),rand(1.5,3),rand(-.5,.5),rand(2,4),1,4,.12,.1,.1,.55,-.3,.4);}
+      else smoke.spawn(x,y+rand(0,3),z,e.d.x*rand(1,2),rand(.1,.6),e.d.z*rand(1,2),rand(2,4),2.5,6,.82,.78,.9,.55,0,.3);}
+    for(const c of chars){if(!c.alive||c.state==='ship'||!hzInWall(e,c.pos.x,c.pos.z))continue;if(e.kind==='fog'&& c.state==='swim')continue;c.hzAcc=(c.hzAcc||0)+e.dps*dt;if(c.hzAcc>=3){damageChar(c,c.hzAcc,null,e.kind==='fire'?'Forest fire':'Poison fog',false,null,true);c.hzAcc=0;}if(e.kind==='fire'&& Math.random()<dt*.5)c.burn={t:2,src:null,acc:0};}
+    if(e.kind==='fire'){e.ballT-=dt;if(e.ballT<=0){e.ballT=rand(2.5,4.5);const ahead=chars.filter(c=>{if(!c.alive||c.state!=='ground')return false;const rx=c.pos.x-e.p.x,rz=c.pos.z-e.p.z,al=rx*e.d.x+rz*e.d.z;return al>e.front&& al<e.front+45&& Math.abs(rx*-e.d.z+rz*e.d.x)<e.half;});
+      if(ahead.length){const t=pick(ahead);const tx=t.pos.x+rand(-4,4),tz=t.pos.z+rand(-4,4),ty=terrainH(tx,tz);for(let k=0;k<30;k++)glow.spawn(tx,ty+18-k*.6,tz,0,-14,0,.3,1.4,.4,6,2.4,.5,1,0,0);setTimeout(()=>{if(MODE.id==='hg')explode(new V3(tx,ty+.5,tz),null,45,'Fireball');},700);}}}}
+  // finale: the safe ring around the Cornucopia shrinks; mutts hunt anyone outside it
+  if(HG.dm&& HG.began&& HZ.ringR>0){HZ.ringR=Math.max(10,HZ.ringR-dt*.32);if(HZ.ringMesh){HZ.ringMesh.scale.set(HZ.ringR,26,HZ.ringR);HZ.ringMesh.position.set(HG.cx,terrainH(HG.cx,HG.cz)-8,HG.cz);}
+    if(HZ.mutts.filter(m=>!m.dead).length<3&&(HZ.respawnT=(HZ.respawnT||0)-dt)<=0){HZ.respawnT=18;const a=rand(0,6.28);hzMutt(HG.cx+Math.cos(a)*75,HG.cz+Math.sin(a)*75);}}
+  for(const m of HZ.mutts){if(m.dead)continue;if(near(m.pos.x,m.pos.z,160))m.mixer.update(dt);let tgt=null,bd=1e9;
+    for(const c of chars){if(!c.alive||c.state==='ship')continue;const dc=Math.hypot(c.pos.x-HG.cx,c.pos.z-HG.cz);if(dc<HZ.ringR-1)continue;const d=c.pos.distanceTo(m.pos);if(d<bd){bd=d;tgt=c;}}
+    let gx,gz,sp=0;if(tgt){gx=tgt.pos.x;gz=tgt.pos.z;sp=8;}else{const a=Math.atan2(m.pos.z-HG.cz,m.pos.x-HG.cx)+dt*.15;gx=HG.cx+Math.cos(a)*(HZ.ringR+6);gz=HG.cz+Math.sin(a)*(HZ.ringR+6);sp=3;}
+    const dx=gx-m.pos.x,dz=gz-m.pos.z,d=Math.hypot(dx,dz);if(d>1.4){m.pos.x+=dx/d*Math.min(d-1.4,sp*dt);m.pos.z+=dz/d*Math.min(d-1.4,sp*dt);m.yaw=lerpAngle(m.yaw,Math.atan2(-dx,-dz),1-Math.exp(-dt*8));}
+    m.pos.y=terrainH(m.pos.x,m.pos.z);m.atkCd-=dt;m.atkT-=dt;
+    if(tgt&& bd<2.6&& m.atkCd<=0){m.atkCd=1.1;m.atkT=.6;damageChar(tgt,14,null,'Mutts',false,new V3(tgt.pos.x,tgt.pos.y+1,tgt.pos.z),false,new V3(dx,0,dz).normalize());if(tgt.ai){tgt.ai.petFoe=m;tgt.ai.petT=gameTime+3;}sfxAt('pickhit',tgt.pos.x,tgt.pos.y+.6,tgt.pos.z);}
+    petPlay(m,m.atkT>0?'attack':sp>5&& d>2?'run':d>2?'walk':'idle');m.wrap.position.copy(m.pos);m.wrap.rotation.y=m.yaw;}}
+
+// ---------- Hunger Games arena dangers: shrinking force field, hidden traps, trapped chests, Peacekeeper drones, berry bushes ----------
+HZ.traps=[];HZ.drones=[];HZ.bushes=[];HZ.gas=[];HZ.caches=[];HZ.border=null;
+const HZM={};function hzMats(){if(HZM.ok)return HZM;HZM.ok=true;
+  HZM.mine=new THREE.MeshStandardMaterial({color:'#3d4130',roughness:.8,metalness:.4});HZM.blink=new THREE.MeshBasicMaterial({color:new THREE.Color(3,.2,.1)});
+  HZM.leaf=new THREE.MeshStandardMaterial({color:'#6b6a3a',roughness:1});HZM.spike=new THREE.MeshStandardMaterial({color:'#7a5a36',roughness:.9});
+  HZM.rope=new THREE.MeshStandardMaterial({color:'#8a7448',roughness:1});HZM.wire=new THREE.MeshBasicMaterial({color:'#b02a1a'});
+  HZM.droneBody=new THREE.MeshStandardMaterial({color:'#e8ebef',roughness:.35,metalness:.6});HZM.droneDark=new THREE.MeshStandardMaterial({color:'#2a2e36',roughness:.5,metalness:.7});
+  HZM.eye=new THREE.MeshBasicMaterial({color:new THREE.Color(4,.3,.2)});HZM.beam=new THREE.MeshBasicMaterial({color:new THREE.Color(5,.4,.3),transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false});
+  const bush=(berry)=>{const P=[{g:new THREE.IcosahedronGeometry(.75,1),c:'#2f6b2a',p:[0,.6,0],s:[1.2,.9,1.1]},{g:new THREE.IcosahedronGeometry(.55,1),c:'#3a7d31',p:[.55,.45,.2]},{g:new THREE.IcosahedronGeometry(.5,1),c:'#2a5f26',p:[-.5,.4,-.25]}];
+    if(berry)for(let i=0;i<14;i++){const a=i*2.4,h=rand(.3,1.1),r=Math.sqrt(Math.max(.05,1-((h-.6)/.6)**2))*.85+.08;P.push({g:new THREE.SphereGeometry(.07,6,5),c:berry,p:[Math.cos(a)*r,h,Math.sin(a)*r]});}return mergeParts(P);};
+  HZM.bushSafe=bush('#d81e2c');HZM.bushNight=bush('#1c1430');HZM.bushEmpty=bush(null);return HZM;}
+function hzLand(x,z,minFromC){if(Math.hypot(x,z)>ISLAND-45||Math.hypot(x-HG.cx,z-HG.cz)<minFromC)return false;const y=terrainH(x,z);return y>WATER_Y+.4&& terrainNormal(x,z).y>.85;}
+function hzSetup(){hzMats();
+  // force field border, centred on the Cornucopia
+  const c=document.createElement('canvas');c.width=128;c.height=128;const x=c.getContext('2d');x.fillStyle='rgba(80,170,255,.10)';x.fillRect(0,0,128,128);x.strokeStyle='rgba(150,220,255,.85)';x.lineWidth=2;
+  for(let r=0;r<4;r++)for(let q=0;q<4;q++){const cx=q*32+(r%2)*16,cy=r*32+16;x.beginPath();for(let k=0;k<6;k++){const a=k/6*6.283+.52;x.lineTo(cx+Math.cos(a)*15,cy+Math.sin(a)*15);}x.closePath();x.stroke();}
+  const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(160,8);
+  const bm=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,160,1,true).translate(0,.5,0),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));bm.renderOrder=3;bm.frustumCulled=false;scene.add(bm);
+  HZ.border={r:470,mesh:bm,shock:new Map(),warned:false};
+  // hidden ground traps
+  let n=0;for(let i=0;i<4000&& n<46;i++){const tx=rand(-ISLAND,ISLAND),tz=rand(-ISLAND,ISLAND);if(!hzLand(tx,tz,45))continue;const kind=pick(['mine','mine','spike','spike','net']);const ty=terrainH(tx,tz);const g=new THREE.Group();g.position.set(tx,ty,tz);
+    if(kind==='mine'){const b=new THREE.Mesh(new THREE.CylinderGeometry(.32,.36,.09,14),HZM.mine);b.position.y=.03;g.add(b);const l=new THREE.Mesh(new THREE.SphereGeometry(.045,6,4),HZM.blink);l.position.y=.1;g.add(l);g.userData.light=l;}
+    else if(kind==='spike'){const p=new THREE.Mesh(new THREE.CircleGeometry(1.15,14).rotateX(-Math.PI/2),HZM.leaf);p.position.y=.04;g.add(p);const sp=new THREE.Group();for(let k=0;k<9;k++){const s=new THREE.Mesh(new THREE.ConeGeometry(.07,.9,5),HZM.spike);s.position.set(rand(-.7,.7),.45,rand(-.7,.7));sp.add(s);}sp.visible=false;g.add(sp);g.userData.spikes=sp;}
+    else{const r=new THREE.Mesh(new THREE.TorusGeometry(.85,.035,5,18).rotateX(Math.PI/2),HZM.rope);r.position.y=.04;g.add(r);const st=new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,.5,5),HZM.rope);st.position.set(.95,.25,0);g.add(st);}
+    scene.add(g);HZ.traps.push({kind,x:tx,z:tz,y:ty,g,armed:true});n++;}
+  // trapped chests: a thin red tripwire across the front is the only tell
+  for(const ch of chests){ch.trap=null;if(ch.wire){ch.g.remove(ch.wire);ch.wire=null;}if(ch.supply||ch.llama||Math.hypot(ch.x-HG.cx,ch.z-HG.cz)<45||Math.random()>.22)continue;
+    ch.trap=pick(['bomb','bomb','gas','alarm']);const w=new THREE.Mesh(new THREE.BoxGeometry(1.5,.018,.018),HZM.wire);w.position.set(0,.12,.5);ch.g.add(w);ch.wire=w;}
+  // Capitol caches guarded by Peacekeeper drones
+  const posts=[];for(let i=0;i<3000&& posts.length<4;i++){const a=rand(0,6.28),r=rand(110,280),px=HG.cx+Math.cos(a)*r,pz=HG.cz+Math.sin(a)*r;if(!hzLand(px,pz,100)||posts.some(p=>Math.hypot(p.x-px,p.z-pz)<150))continue;posts.push({x:px,z:pz});}
+  for(const p of posts){const y=terrainH(p.x,p.z);addChest(p.x,y,p.z,rand(0,6.28),true);const ch=chests[chests.length-1];ch.cache=true;ch.bias=4;ch.rays.material=ch.rays.material.clone();ch.rays.material.color=C('#ff4a3a').multiplyScalar(1.6);HZ.caches.push(ch);hzDrone(p.x,y,p.z);}
+  // berry bushes: bright red berries are safe; the near-black ones are nightlock
+  n=0;for(let i=0;i<4000&& n<60;i++){const bx=rand(-ISLAND,ISLAND),bz=rand(-ISLAND,ISLAND);if(!hzLand(bx,bz,35))continue;const night=Math.random()<.3;const m=new THREE.Mesh(night?HZM.bushNight:HZM.bushSafe,VC_STD);const by=terrainH(bx,bz);m.position.set(bx,by-.05,bz);m.rotation.y=rand(0,6.28);m.castShadow=true;scene.add(m);HZ.bushes.push({x:bx,y:by,z:bz,m,night,picked:false});n++;}}
+function hzDrone(x,y,z){hzMats();const g=new THREE.Group();const body=new THREE.Mesh(new THREE.SphereGeometry(.42,14,10),HZM.droneBody);body.scale.y=.7;g.add(body);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.62,.06,6,20).rotateX(Math.PI/2),HZM.droneDark);g.add(ring);const eye=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),HZM.eye);eye.position.set(0,-.05,-.38);g.add(eye);
+  const rotors=[];for(let k=0;k<4;k++){const a=k/4*6.283+.785;const arm=new THREE.Mesh(new THREE.BoxGeometry(.06,.05,.7),HZM.droneDark);arm.position.set(Math.cos(a)*.45,.08,Math.sin(a)*.45);arm.rotation.y=-a+Math.PI/2;g.add(arm);
+    const ro=new THREE.Mesh(new THREE.BoxGeometry(.5,.015,.06),HZM.droneDark);ro.position.set(Math.cos(a)*.78,.16,Math.sin(a)*.78);g.add(ro);rotors.push(ro);}
+  const hb=new THREE.Mesh(new THREE.BoxGeometry(1.7,.9,1.7),HB_MAT);g.add(hb);
+  const beam=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,1).translate(0,0,-.5),HZM.beam);beam.visible=false;scene.add(beam);
+  g.position.set(x,y+5,z);scene.add(g);const d={g,hb,beam,rotors,post:{x,y,z},pos:g.position,hp:220,dead:false,tgt:null,scanT:0,fireCd:1,beamT:0,yaw:0,seen:new Set()};hb.userData={drone:d};hittables.push(hb);HZ.drones.push(d);return d;}
+function hzKillDrone(d,silent){if(d.dead)return;d.dead=true;scene.remove(d.g);scene.remove(d.beam);arrRemove(hittables,d.hb);
+  if(!silent){explode(d.pos.clone(),null,25,'Drone explosion');const y=terrainH(d.pos.x,d.pos.z);const gi=randomGun(3);spawnPickup(gi,d.pos.x,y+1,d.pos.z,true);spawnPickup({type:'heal',id:pick(['medkit','shield']),r:2,count:1},d.pos.x,y+1,d.pos.z,true);}}
+function damageDrone(d,dmg,att){if(d.dead||dmg<=0)return;d.hp-=dmg;if(att&& att.alive&& !d.tgt)d.tgt=att;if(att===player){dmgNum(d.pos.clone(),Math.round(dmg),'');hitmarker(false);}
+  if(d.hp<=0){hzKillDrone(d);if(att===player)centerMsg('','You shot down a Peacekeeper drone');}}
+function hzBlast(p){for(const d of HZ.drones){if(d.dead)continue;const r=d.pos.distanceTo(p);if(r<7)damageDrone(d,90*(1-r/7),null);}for(const m of HZ.mutts){if(m.dead)continue;const r=m.pos.distanceTo(p);if(r<6)damageMutt(m,120*(1-r/6),null);}}
+function hzSees(d,c){const o=d.pos.clone();const t=new V3(c.pos.x,c.pos.y+1.3,c.pos.z);const dir=t.clone().sub(o);const L=dir.length();dir.divideScalar(L);const h=castRay(o,dir,L+1,null,1.2);return !h||(h.ud&& h.ud.char===c)||h.dist>L-.6;}
+function hzSpringChest(ch,c){const k=ch.trap;ch.trap=null;if(ch.wire){ch.g.remove(ch.wire);ch.wire=null;}const p=new V3(ch.x,ch.y+.6,ch.z);
+  if(k==='bomb'){explode(p,null,70,'Trapped chest');if(c===player)centerMsg('TRAPPED CHEST','It was rigged to blow');}
+  else if(k==='gas'){HZ.gas.push({x:ch.x,y:ch.y,z:ch.z,t:0,life:11,r:5.5});sfxAt('whoosh',ch.x,ch.y,ch.z);if(c===player)centerMsg('TRAPPED CHEST','Poison gas! Get out of the cloud');}
+  else{sfxAt('alert',ch.x,ch.y,ch.z);let d=HZ.drones.filter(d=>!d.dead).sort((a,b)=>a.pos.distanceTo(p)-b.pos.distanceTo(p))[0];if(!d||d.pos.distanceTo(p)>220)d=hzDrone(ch.x+rand(-30,30),ch.y+10,ch.z+rand(-30,30));d.tgt=c;d.alarmT=gameTime+30;if(c===player)centerMsg('TRAPPED CHEST','An alarm went off. A Peacekeeper drone is coming for you');}}
+function hzForage(b,c){if(b.picked)return;b.picked=true;b.m.geometry=HZM.bushEmpty;
+  if(b.night){damageChar(c,45,null,'Nightlock',false,null,true);if(c===player)centerMsg('NIGHTLOCK','Those dark berries were poisonous');}
+  else{c.hp=Math.min(100,c.hp+15);c.hunger=Math.min(100,(c.hunger??100)+35);if(c===player){sfx('eat');const e=c.eye();e.y+=.2;dmgNum(e,'+15 Berries','food');}}}
+function hzBorderR(){if(!HZ.border)return 1e9;if(!HG.began&& !HG.dm)return HZ.border.r;const t=gameTime-HG.startT;if(!HG.dm)HZ.border.r=t<150?470:Math.max(130,470-(t-150)*(340/330));return HZ.border.r;}
+function updateArena(dt){if(MODE.id!=='hg'||!HZ.border)return;const near=(x,z,R)=>Math.hypot(x-camera.position.x,z-camera.position.z)<R;
+  // force field
+  const R=hzBorderR(),B=HZ.border;B.mesh.scale.set(R,70,R);B.mesh.position.set(HG.cx,-20,HG.cz);B.mesh.material.map.offset.y+=dt*.05;
+  for(const c of chars){if(!c.alive||c.state==='ship')continue;const o=c.vehicle||c;const dx=o.pos.x-HG.cx,dz=o.pos.z-HG.cz,d=Math.hypot(dx,dz);if(d<R-1)continue;
+    const k=(R-1.6)/d;o.pos.x=HG.cx+dx*k;o.pos.z=HG.cz+dz*k;if(o.vel){o.vel.x=-dx/d*9;o.vel.z=-dz/d*9;if(o===c)o.vel.y=Math.max(o.vel.y,3);}
+    if((B.shock.get(c)||0)<gameTime){B.shock.set(c,gameTime+.8);damageChar(c,15,null,'Force field',false,null,true);sfxAt('shock',c.pos.x,c.pos.y+1,c.pos.z);for(let i=0;i<24;i++)glow.spawn(c.pos.x,c.pos.y+1,c.pos.z,rand(-4,4),rand(0,5),rand(-4,4),rand(.2,.5),.12,.04,1.4,2.6,4,1,0,1);
+      if(c===player&& !B.warned){B.warned=true;centerMsg('FORCE FIELD','The arena border is closing in. Stay away from the wall');}}}
+  if(!HG.began)return;
+  // ground traps
+  const blink=Math.sin(gameTime*5)>.6;
+  for(const t of HZ.traps){if(t.kind==='mine'&& t.g.userData.light)t.g.userData.light.visible=t.armed&& blink;if(!t.armed)continue;
+    for(const c of chars){if(!c.alive||c.state!=='ground'||Math.abs(c.pos.y-t.y)>1.3)continue;const d=Math.hypot(c.pos.x-t.x,c.pos.z-t.z);if(d>(t.kind==='spike'?1.05:.9))continue;t.armed=false;
+      if(t.kind==='mine'){sfxAt('beep',t.x,t.y,t.z);setTimeout(()=>{if(MODE.id==='hg'){explode(new V3(t.x,t.y+.3,t.z),null,80,'Hidden mine');scene.remove(t.g);}},350);if(c===player)centerMsg('','*click*');}
+      else if(t.kind==='spike'){t.g.userData.spikes.visible=true;t.g.children[0].visible=false;damageChar(c,40,null,'Spike trap',false,null,true);sfxAt('crack',t.x,t.y,t.z);if(c===player)centerMsg('','You fell into a spike pit');}
+      else{c.snare={x:t.x,z:t.z,until:gameTime+3.5};sfxAt('whoosh',t.x,t.y,t.z);const net=new THREE.Mesh(new THREE.SphereGeometry(1,10,6,0,6.283,0,1.6),new THREE.MeshBasicMaterial({color:'#8a7448',wireframe:true}));net.position.set(t.x,t.y,t.z);net.scale.set(.9,1.9,.9);scene.add(net);t.net=net;setTimeout(()=>scene.remove(net),3500);if(c===player)centerMsg('SNARED','You are stuck in a net for a few seconds');}
+      break;}}
+  for(const c of chars){if(c.snare&& c.alive){if(gameTime>c.snare.until)c.snare=null;else{c.pos.x=c.snare.x;c.pos.z=c.snare.z;c.vel.x=c.vel.z=0;}}}
+  // trap gas clouds
+  for(let i=HZ.gas.length-1;i>=0;i--){const g=HZ.gas[i];g.t+=dt;if(g.t>g.life){HZ.gas.splice(i,1);continue;}const r=g.r*Math.min(1,g.t*2);
+    if(near(g.x,g.z,150))for(let k=0;k<4;k++)smoke.spawn(g.x+rand(-r,r)*.7,g.y+rand(0,1.5),g.z+rand(-r,r)*.7,rand(-.6,.6),rand(.2,.8),rand(-.6,.6),rand(2,3.5),2,4,.45,.7,.25,.6,0,.3);
+    for(const c of chars){if(!c.alive||Math.hypot(c.pos.x-g.x,c.pos.z-g.z)>r)continue;c.gasAcc=(c.gasAcc||0)+8*dt;if(c.gasAcc>=3){damageChar(c,c.gasAcc,null,'Trap gas',false,null,true);c.gasAcc=0;}}}
+  // Peacekeeper drones
+  for(const d of HZ.drones){if(d.dead)continue;for(const ro of d.rotors)ro.rotation.y+=dt*40;d.scanT-=dt;d.fireCd-=dt;
+    const leash=d.alarmT>gameTime?400:60;if(d.tgt&&(!d.tgt.alive||Math.hypot(d.tgt.pos.x-d.post.x,d.tgt.pos.z-d.post.z)>leash))d.tgt=null;
+    if(d.scanT<=0){d.scanT=.4;if(!d.tgt){let best=null,bd=30;for(const c of chars){if(!c.alive||c.state==='ship')continue;const r=c.pos.distanceTo(d.pos);if(r<bd&& Math.hypot(c.pos.x-d.post.x,c.pos.z-d.post.z)<55&& hzSees(d,c)){bd=r;best=c;}}
+        if(best){d.tgt=best;sfxAt('alert',d.pos.x,d.pos.y,d.pos.z);if(best===player&& !d.seen.has(best))centerMsg('','A Peacekeeper drone has spotted you');d.seen.add(best);}}
+      d.los=d.tgt?hzSees(d,d.tgt):false;}
+    let gx,gy,gz,sp;if(d.tgt){const t=d.tgt;const a=Math.atan2(d.pos.z-t.pos.z,d.pos.x-t.pos.x);gx=t.pos.x+Math.cos(a)*9;gz=t.pos.z+Math.sin(a)*9;gy=t.pos.y+5;sp=9;}
+    else{const a=gameTime*.35+d.post.x;gx=d.post.x+Math.cos(a)*8;gz=d.post.z+Math.sin(a)*8;gy=d.post.y+5+Math.sin(gameTime*1.3)*.4;sp=4;}
+    gy=Math.max(gy,terrainH(gx,gz)+3.5);const v=new V3(gx-d.pos.x,gy-d.pos.y,gz-d.pos.z),L=v.length();if(L>.1)d.pos.addScaledVector(v.divideScalar(L),Math.min(L,sp*dt));
+    const look=d.tgt?d.tgt.pos:new V3(gx,0,gz);d.yaw=lerpAngle(d.yaw,Math.atan2(-(look.x-d.pos.x),-(look.z-d.pos.z)),1-Math.exp(-dt*6));d.g.rotation.y=d.yaw;
+    if(d.beamT>0){d.beamT-=dt;if(d.beamT<=0)d.beam.visible=false;}
+    if(d.tgt&& d.los&& d.fireCd<=0&& d.pos.distanceTo(d.tgt.pos)<40){d.fireCd=1.1;const t=d.tgt;const dist=d.pos.distanceTo(t.pos);const hit=Math.random()<Math.max(.25,.7-dist/80);
+      const aim=new V3(t.pos.x,t.pos.y+1.2,t.pos.z);if(!hit)aim.add(new V3(rand(-2,2),rand(-.5,1.5),rand(-2,2)));d.beam.position.copy(d.pos);d.beam.lookAt(aim);d.beam.scale.z=d.pos.distanceTo(aim);d.beam.visible=true;d.beamT=.08;
+      sfxAt('shock',d.pos.x,d.pos.y,d.pos.z);if(hit)damageChar(t,11,null,'Peacekeeper drone',false,aim,false,aim.clone().sub(d.pos).normalize());}}
+  // the drones and bushes only matter in the arena; mutts handled above
+}
 
 // ---------- Team Deathmatch ----------
 function tdmSpawn(c){const side=c.team===0?-1:1;const x=side*rand(124,134),z=rand(-100,100);c.pos.set(x,terrainH(x,z)+.1,z);c.vel.set(0,0,0);c.yaw=side<0?-Math.PI/2:Math.PI/2;}
@@ -4427,7 +4612,7 @@ function boot(){
         let auto=false;try{auto=sessionStorage.getItem('stormfall.autoplay')==='1';sessionStorage.removeItem('stormfall.autoplay');}catch(err){}if(auto)toast('Press PLAY to drop in again');},250);});};
   next();}
 setTimeout(()=>{try{boot();}catch(err){console.error(err);sfError(err.message);}},60);
-if(!window.__SF)Object.defineProperty(window,'__SF',{value:{get player(){return player},chars,pieces,storm,ship,step:d=>step(d),keys,setLook:(y,p)=>{yaw=y;pitch=p;},mouse:(l,r)=>{mouseL=l;mouseLPressed=l;mouseR=r;},get state(){return gameState},render:()=>renderFrame(),scene,renderer,camera,post,Q:()=>Q,terrainH,grass:()=>grassMesh,vehicles,drops,TOD,doors,glassList,harvs,spawnDrop:()=>spawnDrop(),addPiece,pieceBox,SK,spritesW,giveSprite,PROFILE,ED,CM:()=>CM,editorUpdate,edPlace,edSave,edUndo,damageChar:(c,d,att,w)=>damageChar(c,d,att||null,w||"Test",false,null,true),setCam:f=>{camOverride=f;},hm:()=>heightTex,bullets,grenades,lobby:LOBBY,models:MODELS,SET,AA,rockets,fireGun:(c,o,d)=>fireGun(c,o,d,0,true),chests,pickups,openChest,spawnPickup:(it,x,y,z)=>spawnPickup(it,x,y,z,false)}});
+if(!window.__SF)Object.defineProperty(window,'__SF',{value:{get player(){return player},chars,pieces,storm,ship,step:d=>step(d),keys,setLook:(y,p)=>{yaw=y;pitch=p;},mouse:(l,r)=>{mouseL=l;mouseLPressed=l;mouseR=r;},get state(){return gameState},render:()=>renderFrame(),scene,renderer,camera,post,Q:()=>Q,terrainH,grass:()=>grassMesh,vehicles,drops,TOD,doors,glassList,harvs,spawnDrop:()=>spawnDrop(),HZ,HG:()=>HG,chests,openChest,hzWall,hzSwarm,MODE:()=>MODE,get gameTime(){return gameTime},addPiece,pieceBox,SK,spritesW,giveSprite,PROFILE,ED,CM:()=>CM,editorUpdate,edPlace,edSave,edUndo,damageChar:(c,d,att,w)=>damageChar(c,d,att||null,w||"Test",false,null,true),setCam:f=>{camOverride=f;},hm:()=>heightTex,bullets,grenades,lobby:LOBBY,models:MODELS,SET,AA,rockets,fireGun:(c,o,d)=>fireGun(c,o,d,0,true),chests,pickups,openChest,spawnPickup:(it,x,y,z)=>spawnPickup(it,x,y,z,false)}});
 }
 })();
 

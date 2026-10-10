@@ -41,7 +41,7 @@ Each browser keeps its own save. To move your progress to another browser or com
 |---|---|
 | **Battle Royale** | 30 players, a cargo plane drop, building, loot and a shrinking storm. Last one standing wins. |
 | **No Build Battle Royale** | The same without building. Shields recharge when you avoid damage. |
-| **Hunger Games** | 36 tributes on pedestals around the Cornucopia. Districts, the Careers, chests that take 2 seconds to open, sponsors, a feast, a chest refill and a final deathmatch. |
+| **Hunger Games** | 36 tributes on pedestals around the Cornucopia, with no storm and building allowed. Districts, the Careers, chests that take 2 seconds to open, sponsors, a feast and a chest refill. The Gamemakers force you to run with a forest fire, poison fog and tracker jacker swarms (water protects you from the fog and the swarm). The arena's force field closes in after a few minutes. The arena is also full of hidden traps (mines, spike pits and net snares), rigged chests (look for a red tripwire), Peacekeeper drones guarding Capitol caches of Epic loot, and berry bushes (red berries heal; the near-black ones are poisonous nightlock). In the finale, mutts hunt anyone outside a shrinking ring around the Cornucopia. |
 | **Team Deathmatch** | 12 vs 12 in the City. Respawns, infinite ammo, first team to 30 eliminations. |
 | **My Maps** | Build your own island in the map editor and play a Battle Royale on it. |
 
