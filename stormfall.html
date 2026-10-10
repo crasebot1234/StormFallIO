@@ -6,6 +6,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Stormfall Battle Royale</title>
+<script>
+// Google Analytics. Paste your Measurement ID (analytics.google.com > Admin > Data streams, it looks like G-XXXXXXXXXX).
+// Empty = analytics off. It never runs on localhost, so your own testing isn't counted.
+window.SF_GA_ID='G-QNM3H8BQW5';
+(function(id){window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments);};
+  window.sfTrack=function(){};if(!id||/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)||location.protocol==='file:')return;
+  const s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id);document.head.appendChild(s);
+  gtag('js',new Date());gtag('config',id,{content_group:'Stormfall'});/* one data stream is shared across the site and its subdomains: this tags the game's traffic */window.sfTrack=function(name,params){try{gtag('event',name,Object.assign({content_group:'Stormfall'},params||{}));}catch(e){}};})(window.SF_GA_ID);
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,800;1,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -3477,7 +3486,7 @@ function step(dt){
 function applyQuality(){Q=QUAL[SET.quality];sun.shadow.mapSize.set(Q.shadow,Q.shadow);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}
   if(grassMesh){grassMesh.geometry.instanceCount=Q.grass;grassMesh.visible=Q.grass>0;}camera.far=Q.dist+400;scene.fog.density=.0021;applySize();}
 function startGame(){BOT_N=0;
-  SET.skill=+$('diff').value;SET.sens=+$('sens').value;const qv=$('qual').value;AQ.on=qv==='auto';SET.quality=AQ.on?(TOUCH.on?'low':'high'):qv;SET.fov=+$('fov').value;SET.aa=+$('aa').value;SET.cam=+$('cam').value;SET.autoReload=$('arl').value!=='0';applyQuality();initAudio();initMatch();
+  SET.skill=+$('diff').value;SET.sens=+$('sens').value;const qv=$('qual').value;AQ.on=qv==='auto';SET.quality=AQ.on?(TOUCH.on?'low':'high'):qv;SET.fov=+$('fov').value;SET.aa=+$('aa').value;SET.cam=+$('cam').value;SET.autoReload=$('arl').value!=='0';applyQuality();initAudio();initMatch();sfTrack('match_start',{mode:MODE.id,bots:$('diff').selectedOptions[0]?.textContent||'',touch:TOUCH.on?1:0});
   if(LOBBY.char){removeCharModel(LOBBY.char);LOBBY.char=null;}if(LOBBY.pet){scene.remove(LOBBY.pet.wrap);LOBBY.pet=null;}if(LOBBY.grp){scene.remove(LOBBY.grp);LOBBY.grp=null;}
   $('menu').classList.add('hidden');$('hud').classList.remove('hidden');
   buildShip();player=new Char('You',true);chars.push(player);player.m.root.visible=false;
@@ -3488,7 +3497,8 @@ function startGame(){BOT_N=0;
     centerMsg('PRESS SPACE TO JUMP','You are in the cargo plane. Walk around, then Space to dive off the ramp.');}
   else{ship.done=true;ship.t=ship.dur;if(ship.mesh){scene.remove(ship.mesh);ship.mesh=null;}if(MODE.id==='hg')setupHG();if(MODE.id==='tdm')setupTDM();}
   $('modeName').textContent=MODE.name;}
-function endGame(win){if(gameState!=='play')return;gameState='over_pending';const killer=!win&& !MODE.respawn&& player.lastAttacker&& player.lastAttacker!==player&& player.lastAttacker.alive?player.lastAttacker:null;if(killer){spec=killer;centerMsg('ELIMINATED','Watching '+killer.name);}
+function endGame(win){if(gameState!=='play')return;gameState='over_pending';
+  sfTrack('match_end',{mode:MODE.id,result:win?'win':'loss',kills:player.kills||0,seconds:Math.round(gameTime-(stats.start||0)),touch:TOUCH.on?1:0});const killer=!win&& !MODE.respawn&& player.lastAttacker&& player.lastAttacker!==player&& player.lastAttacker.alive?player.lastAttacker:null;if(killer){spec=killer;centerMsg('ELIMINATED','Watching '+killer.name);}
   setTimeout(()=>{gameState='over';closeUI();if(document.exitPointerLock)document.exitPointerLock();const place=win?1:aliveCount+1;const e=$('end');const t=gameTime-stats.start;
     const xp=200+player.kills*150+Math.max(0,30-place)*25+(win?1000:0)+Math.round(t/2),sb=win?150:0;/* Storm Bucks only for a win */
     const S=PROFILE.stats;S.matches++;if(win)S.wins++;S.kills+=player.kills;S.dmg+=stats.dmg;if(place<=10)S.top10++;S.time+=t;S.best=Math.min(S.best,place);PROFILE.sb+=sb;const lv=grantXP(xp);saveProfile();
@@ -3964,7 +3974,6 @@ function makeSpriteMesh(type){const col=C(SPRITE_DEF[type].col);if(!SPRITE_GEO)S
 function spawnSprite(type,x,z){const y=groundAt(x,z,terrainH(x,z)+2,null)+1.15;const g=makeSpriteMesh(type);g.position.set(x,y,z);scene.add(g);spritesW.push({type,x,y,z,g,alive:true,ph:rand(0,6),respawn:0});}
 function initSprites(){for(const s of spritesW)scene.remove(s.g);spritesW.length=0;for(const c of chars){c.sprite=null;c.hadSprite=false;}
   // ultra rare: only 1 match in 10 has a sprite at all, and then just one, hidden by a tree somewhere (Battle Royale, No Build and your own maps)
-  if(WORLD==='custom'&& CM){const placed=CM.objs.filter(o=>o.t==='sprite'&& SPRITE_DEF[o.v]);if(placed.length){for(const o of placed)spawnSprite(o.v,o.x,o.z);return;}}
   if(!['br','nobuild','custom'].includes(MODE.id)||Math.random()>=.1)return;const types=Object.keys(SPRITE_DEF);let n=0;const N=1;
   // tucked in beside trees, away from open ground, so you have to explore to find them
   const trees=harvs.filter(o=>o.alive&& o.kind==='tree');for(let i=0;i<4000&& n<N;i++){let x,z;if(trees.length&& i<3000){const t=pick(trees),a=rand(0,6.28);x=t.x+Math.cos(a)*(t.r+1.1);z=t.z+Math.sin(a)*(t.r+1.1);}else{const a=rand(0,6.28),r=Math.sqrt(Math.random())*(ISLAND-60);x=Math.cos(a)*r;z=Math.sin(a)*r;}
@@ -4005,7 +4014,7 @@ function cmEncode(){const N=CM_N*CM_N;const i16=new Int16Array(N);for(let i=0;i<
 function cmThumb(){const S=112,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');const img=g.createImageData(S,S);const col=new THREE.Color();
   for(let j=0;j<S;j++)for(let i=0;i<S;i++){const x=-CM_HALF+(i+.5)/S*CM_HALF*2,z=-CM_HALF+(j+.5)/S*CM_HALF*2,y=terrainH(x,z);const k=(j*S+i)*4;
     if(y<WATER_Y){img.data[k]=40;img.data[k+1]=120;img.data[k+2]=160;}else{col.set(CM_PAINT[cmPaintAt(x,z)][1]);const sh=clamp(.8+(y-4)*.02,.6,1.3);img.data[k]=col.r*255*sh;img.data[k+1]=col.g*255*sh;img.data[k+2]=col.b*255*sh;}img.data[k+3]=255;}
-  g.putImageData(img,0,0);const M=v=>(v+CM_HALF)/(CM_HALF*2)*S;for(const o of CM.objs){g.fillStyle=o.t==='house'||o.t==='tower'||o.t==='warehouse'||o.t==='piece'?'#c94a3a':o.t==='tree'?'#1f4a1a':o.t==='chest'||o.t==='llama'?'#ffd23f':o.t==='sprite'?'#7fe8ff':o.t==='car'?'#fff':'rgba(0,0,0,0)';g.fillRect(M(o.x)-1.5,M(o.z)-1.5,3,3);}
+  g.putImageData(img,0,0);const M=v=>(v+CM_HALF)/(CM_HALF*2)*S;for(const o of CM.objs){g.fillStyle=o.t==='house'||o.t==='tower'||o.t==='warehouse'||o.t==='piece'?'#c94a3a':o.t==='tree'?'#1f4a1a':o.t==='chest'||o.t==='llama'?'#ffd23f':o.t==='car'?'#fff':'rgba(0,0,0,0)';g.fillRect(M(o.x)-1.5,M(o.z)-1.5,3,3);}
   return c.toDataURL('image/png');}
 // build one map object with the game's own systems (used for play and in the editor)
 function placeObj(o){const y=terrainH(o.x,o.z),lvl=Math.max(0,Math.round(y/H)),ix=Math.floor(o.x/T),iz=Math.floor(o.z/T);
@@ -4024,7 +4033,7 @@ function placeObj(o){const y=terrainH(o.x,o.z),lvl=Math.max(0,Math.round(y/H)),i
     case 'vend':addVending(o.x,o.z,o.r||0);break;
     case 'gas':addGasStation(o.x,o.z);break;
     case 'pad':placePad(o.x,y,o.z);break;
-    case 'sprite':if(EDITING&& SPRITE_DEF[o.v])spawnSprite(o.v,o.x,o.z);break;
+    case 'sprite':break;/* sprites can only be earned: ones placed in older maps are ignored */
     case 'piece':addPiece(o.pt,o.ix,o.iy,o.iz,o.a||0,o.m||'wood',true);break;
     case 'poi':if(gameState==='edit'||EDITING){const cv=document.createElement('canvas');cv.width=512;cv.height=96;const g=cv.getContext('2d');g.font='800 56px "Barlow Condensed",sans-serif';g.textAlign='center';g.lineWidth=10;g.strokeStyle='rgba(0,0,0,.75)';g.strokeText(o.name.toUpperCase(),256,66);g.fillStyle='#ffd23f';g.fillText(o.name.toUpperCase(),256,66);
       const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),depthTest:false,transparent:true,fog:false}));sp.scale.set(24,4.5,1);sp.position.set(o.x,y+9,o.z);sp.renderOrder=50;scene.add(sp);
@@ -4045,7 +4054,7 @@ const ED={tool:'hand',pan:false,spriteT:'air',R:10,S:1,rot:0,house:{w:3,d:3,st:2
   pos:new V3(0,60,150),yaw:0,pitch:-.45,keys:{},look:false,mx:0,my:0,down:false,hit:null,undo:[],dirty:false,stroke:null,flatY:0,texT:0,exitArm:0,strokeT:0};
 const ED_TOOLS=[['View',[['hand','Move view']]],['Terrain',[['raise','Raise'],['lower','Lower'],['flatten','Flatten'],['smooth','Smooth']]],['Paint',CM_PAINT.map((p,i)=>['p'+i,p[0]])],
   ['Buildings',[['house','House'],['tower','Tower'],['warehouse','Warehouse']]],['Build pieces',[['wall','Wall'],['floor','Floor'],['ramp','Stairs'],['cone','Roof']]],
-  ['Nature',[['tree','Tree'],['rock','Rock']]],['Vehicles',[['car','Car']]],['Loot',[['chest','Chest'],['llama','Loot Llama'],['loot','Floor loot'],['sprite','Sprite']]],
+  ['Nature',[['tree','Tree'],['rock','Rock']]],['Vehicles',[['car','Car']]],['Loot',[['chest','Chest'],['llama','Loot Llama'],['loot','Floor loot']]],
   ['Props',[['barrel','Barrel'],['lamp','Street lamp'],['vend','Vending'],['gas','Gas station'],['pad','Launch pad']]],['Map',[['poi','Named place'],['erase','Erase']]]];
 const TERRAIN_TOOLS=['raise','lower','flatten','smooth','p0','p1','p2','p3','p4'];
 let edRing=null,edBox=null;
@@ -4066,7 +4075,7 @@ function renderEdOpts(){const t=ED.tool;let h='';const rng=(k,l,min,max,st,v)=>`
   if(t==='rock')h+=rng('rs','Size',.6,2.4,.1,ED.rockS);
   if(t==='car')h+=`<label>Type ${edSel('cv',[['sedan','Sedan'],['pickup','Pickup'],['sports','Sports car'],['buggy','Buggy']],ED.carV)}</label><p class="edp">R rotates.</p>`;
   if(t==='poi')h+=`<label>Name<input data-k="pn" maxlength="22" placeholder="e.g. Pleasant Park" value="${escHTML(ED.poiName)}"></label><p class="edp">Named places show on the map and bots drop there.</p>`;
-  if(t==='sprite')h+=`<label>Type ${edSel('sp',[['air','Air: double jump'],['water','Water: healing'],['fire','Fire: burning hits'],['earth','Earth: weapon upgrade']],ED.spriteT)}</label><p class="edp">Placed sprites always appear on your map. Each player can carry one per match.</p>`;
+
   if(t==='erase')h+=`<p class="edp">Click anything you placed to remove it.</p>`;
   h+=`<hr><b class="edh">Match settings</b>${rng('bots','Bots',0,29,1,CM.meta.bots??15)}<label>Building ${edSel('bld',[[1,'On'],[0,'Off (No Build)']],CM.meta.build===false?0:1)}</label>`;
   $('edOpts').innerHTML=h;}
@@ -4116,7 +4125,7 @@ function edPlace(){const h=ED.hit;if(!h)return;const t=ED.tool;let o=null;const 
     o={t:'piece',pt:t,ix,iy,iz,a,m:ED.mat,x:(ix+.5)*T,z:(iz+.5)*T};if(pieces.has(pieceKey(t,ix,iy,iz,a)))return;}
   else if(t==='tree')o={t,x:h.x,z:h.z,v:ED.treeV,s:+rand(.9,1.2).toFixed(2)};
   else if(t==='rock')o={t,x:h.x,z:h.z,s:ED.rockS,v:randi(0,2)};
-  else if(t==='sprite')o={t,x:h.x,z:h.z,v:ED.spriteT};
+  
   else if(t==='car')o={t,x:h.x,z:h.z,v:ED.carV,r};
   else if(t==='poi'){const nm=(ED.poiName||'').trim();if(!nm){toast('Type a name for this place first');return;}o={t,x:h.x,z:h.z,name:nm};}
   else o={t,x:h.x,z:h.z,r};

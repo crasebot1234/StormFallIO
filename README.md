@@ -29,6 +29,10 @@ If `./start.sh` says "permission denied", run `chmod +x start.sh` once, or just 
 
 The game has to be opened through a server (the website, or `./start.sh`), not by double-clicking the HTML file, so the browser can load the 3D models and music in `assets/`.
 
+## Analytics
+
+Google Analytics is built in but off until you add your Measurement ID. In `stormfall.html`, near the top, set `window.SF_GA_ID='G-XXXXXXXXXX';`. It only runs on the website, never on localhost. Besides page views it records `match_start` (mode, bot difficulty, touch) and `match_end` (mode, win or loss, kills, match length).
+
 ## Saving
 
 Your progress is saved automatically in your browser: level, XP, Storm Bucks, the skins, tools, gliders, emotes and sidekicks you own, settings, career stats, the sprites you've found, and every map you made.
@@ -85,7 +89,7 @@ Hold the device sideways. On a computer you can force touch controls by adding `
 - **Sidekicks:** buyable pets that follow you and fight in short bursts. One per match, in Battle Royale and No Build only.
 - **Sprites:** ultra-rare elemental creatures (Air, Water, Fire, Earth) that give you a power for the match. Track the ones you've found in the Sprites tab.
 - **Shop and progress:** an Item Shop, Locker, Battle Pass, Career stats and Storm Bucks (150 for each win).
-- **Map editor:** sculpt hills, paint the ground, and place houses, towers, build pieces, cars, chests, loot llamas, sprites and named places.
+- **Map editor:** sculpt hills, paint the ground, and place houses, towers, build pieces, cars, chests, loot llamas and named places. Sprites can only be earned, never placed.
 
 Your profile, settings and maps are saved in your browser (localStorage).
 
