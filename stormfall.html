@@ -780,7 +780,13 @@ THREE.ShaderChunk.fog_vertex='#ifdef USE_FOG\n fogDepth=-mvPosition.z;\n fogWY=d
 THREE.ShaderChunk.fog_pars_fragment='#ifdef USE_FOG\n uniform vec3 fogColor;\n varying float fogDepth;\n varying float fogWY;\n #ifdef FOG_EXP2\n  uniform float fogDensity;\n #else\n  uniform float fogNear;\n  uniform float fogFar;\n #endif\n#endif';
 THREE.ShaderChunk.fog_fragment='#ifdef USE_FOG\n #ifdef FOG_EXP2\n  float fogFactor=1.0-exp(-fogDensity*fogDensity*fogDepth*fogDepth);\n  float hfog=(1.0-exp(-fogDepth*0.0024*exp(-max(fogWY-1.0,0.0)*0.075)))*smoothstep(10.0,90.0,fogDepth);\n  fogFactor=clamp(max(fogFactor,hfog),0.0,1.0);\n #else\n  float fogFactor=smoothstep(fogNear,fogFar,fogDepth);\n #endif\n gl_FragColor.rgb=mix(gl_FragColor.rgb,fogColor,fogFactor);\n#endif';
 const MAX_ANISO=renderer.capabilities.getMaxAnisotropy();
-function applySize(){renderer.setPixelRatio(Math.min(devicePixelRatio,Q.dpr||2)*Q.scale);renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();setupPost();}
+// size the 3D view from the canvas's real on-screen size (it is always 100% of the screen in CSS);
+// phones often report a wrong size right after loading, so a watchdog re-checks and fixes any mismatch
+function viewSize(){const c=renderer.domElement;const w=Math.round(c.clientWidth||innerWidth),h=Math.round(c.clientHeight||innerHeight);return [Math.max(2,w),Math.max(2,h)];}
+function applySize(){const [w,h]=viewSize();renderer.setPixelRatio(Math.min(devicePixelRatio,Q.dpr||2)*Q.scale);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();setupPost();applySize.last=w+'x'+h+'@'+devicePixelRatio;}
+setInterval(()=>{if(!applySize.last)return;const [w,h]=viewSize(),c=renderer.domElement,pr=renderer.getPixelRatio();if(applySize.last!==w+'x'+h+'@'+devicePixelRatio||Math.abs(c.width-Math.floor(w*pr))>2||Math.abs(c.height-Math.floor(h*pr))>2)applySize();},500);
+for(const ev of ['orientationchange','pageshow','load'])addEventListener(ev,()=>{setTimeout(()=>{if(applySize.last)applySize();},120);setTimeout(()=>{if(applySize.last)applySize();},600);});
+if(window.visualViewport)visualViewport.addEventListener('resize',()=>{if(applySize.last)applySize();});
 const scene=new THREE.Scene();
 const FOG_COL=C('#a9c3d6');
 scene.fog=new THREE.FogExp2(FOG_COL.clone(),.0021);
