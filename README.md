@@ -45,6 +45,19 @@ Each browser keeps its own save. To move your progress to another browser or com
 | **Team Deathmatch** | 12 vs 12 in the City. Respawns, infinite ammo, first team to 30 eliminations. |
 | **My Maps** | Build your own island in the map editor and play a Battle Royale on it. |
 
+## Phones and tablets
+
+Stormfall switches to touch controls automatically on phones and iPads:
+- **Movement:** a joystick on the left (push it all the way forward to sprint). Drag on the right side of the screen to look and aim.
+- **Main buttons:** FIRE, AIM, JUMP, CROUCH, RELOAD, BUILD (then WALL, FLOOR, RAMP or ROOF), and USE, which glows when you can open a chest, pick something up or get in a car.
+- **Top row:** ITEMS, DROP, SHOP, EMOTE, CAM, SIDE (shoulder swap), PING, CHAT, MAP and pause. Tap a hotbar slot to switch weapons.
+- **USE:** its label says what it will do (OPEN, PICK UP, SWAP, DRIVE, EXIT, DOOR, BUY), and you can also tap the prompt itself.
+- **Sniper and building:** STEADY appears while you're scoped. EDIT sits with the build pieces.
+- **Spectating:** PREV, NEXT and RESULTS.
+- **Map editor:** one finger uses the current tool (drag the view, paint or sculpt, tap to place). Pinch to zoom, drag with two fingers to turn. Rotate and Undo are in the top bar.
+
+Hold the device sideways. On a computer you can force touch controls by adding `?touch=1` to the address. The original sample version (Credits → Play here) is keyboard and mouse only.
+
 ## Controls
 
 | Key | Action |

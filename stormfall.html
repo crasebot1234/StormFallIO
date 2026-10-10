@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Stormfall Battle Royale</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,6 +53,50 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:none
 #rds .dot{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:#ff3b2f;box-shadow:0 0 6px 2px rgba(255,40,30,.75),0 0 16px rgba(255,40,30,.45)}
 #hud.ads #cross{opacity:0}
 #ntags{position:absolute;inset:0;overflow:hidden}
+/* ---------- phones & tablets ---------- */
+#touchUI{position:fixed;inset:0;z-index:4;pointer-events:none;touch-action:none;-webkit-user-select:none;user-select:none}
+#touchUI .tb{pointer-events:auto;touch-action:none;position:relative;width:62px;height:62px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(10,16,26,.42);color:#fff;font:800 11px var(--display);letter-spacing:.06em;backdrop-filter:blur(3px);-webkit-tap-highlight-color:transparent}
+#touchUI .tb.on{background:rgba(255,192,74,.55);border-color:#ffc04a}
+#touchUI .tb.big{width:88px;height:88px;font-size:15px;background:rgba(200,50,40,.45);border-color:rgba(255,140,120,.8)}
+#touchUI .tb.mic{background:rgba(60,140,255,.45);border-color:#8fc4ff}
+#touchUI .tb.sm{width:auto;min-width:46px;padding:0 9px;height:38px;border-radius:10px;font-size:10.5px}
+#touchUI .tb.ready{background:rgba(255,192,74,.6);border-color:#ffd23f;box-shadow:0 0 16px rgba(255,200,60,.8);animation:usep .8s infinite alternate}@keyframes usep{to{transform:scale(1.08)}}
+#tStick{pointer-events:auto;touch-action:none;position:absolute;left:calc(22px + env(safe-area-inset-left));bottom:18px;transform:scale(var(--ts,1));transform-origin:bottom left;width:132px;height:132px;border-radius:50%;background:rgba(10,16,26,.32);border:2px solid rgba(255,255,255,.35)}
+#tKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 2px 10px rgba(0,0,0,.4)}
+#tBtns{position:absolute;right:calc(14px + env(safe-area-inset-right));bottom:12px;width:230px;height:240px;transform:scale(var(--ts,1));transform-origin:bottom right}
+#tBtns [data-b=fire]{position:absolute;right:0;bottom:0}#tBtns [data-b=aim]{position:absolute;right:96px;bottom:0}#tBtns [data-b=jump]{position:absolute;right:12px;bottom:96px}
+#tBtns [data-b=crouch]{position:absolute;right:84px;bottom:74px}#tBtns [data-b=reload]{position:absolute;right:166px;bottom:6px}#tBtns [data-b=use]{position:absolute;right:154px;bottom:76px}#tBtns [data-b=build]{position:absolute;right:30px;bottom:166px}
+#tBuild{position:absolute;right:calc(14px + 236px*var(--ts,1) + env(safe-area-inset-right));bottom:12px;transform:scale(var(--ts,1));transform-origin:bottom right;display:flex;flex-direction:column;gap:6px}#tBuild .tb{width:56px;height:42px;border-radius:10px}
+#tTop{position:absolute;right:calc(10px + 140px*var(--ts,1));top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:calc((100vw - 290px)/var(--ts,1));transform:scale(var(--ts,1));transform-origin:top right}
+@media (max-width:760px){body.touch #compass{display:none}}
+#rotateMsg{display:none}
+body.touch #touchNote{display:none!important}
+body.touch .kbdOnly{display:none!important}body:not(.touch) .touchOnly{display:none!important}
+body.touch #compass{top:calc(52px*var(--ts,1))}
+body.touch canvas#c{touch-action:none}
+body.touch #chatIn:not(.active),body.touch #prompt kbd{display:none}
+body.touch #chatIn.active{display:block;position:fixed;left:12px;right:12px;width:auto;top:30%;bottom:auto!important;z-index:30;font-size:16px}
+#tChat{position:fixed;left:50%;top:calc(30% + 52px);transform:translateX(-50%);display:flex;gap:10px;z-index:31}#tChat .tb{min-width:72px;height:40px}
+#tScope{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) scale(var(--ts,1))}#tScope .tb{width:110px;height:48px;border-radius:12px}
+#tSpec{position:absolute;left:50%;bottom:16px;transform:translateX(-50%) scale(var(--ts,1));display:flex;gap:10px}
+#touchUI.spectating #tStick,#touchUI.spectating #tBtns,#touchUI.spectating #tBuild,#touchUI.spectating #tTop{display:none}
+body.touch #editor .edHint{display:none}body.touch #editor .edSide{width:170px}body.touch #editor .edRight{width:200px}
+body.touch #tr{transform:scale(calc(.62*var(--ts,1)));transform-origin:top right;right:8px;top:6px}
+body.touch #hotbar,body.touch #hotbar *{pointer-events:auto;touch-action:none}
+body.touch #ammoAll{display:none}body.touch:not(.building) #mats{display:none}
+body.touch #ammo b{font-size:30px}body.touch #ammo span{display:none}
+body.touch #vitals{transform:scale(.7);transform-origin:top left;left:calc(10px + env(safe-area-inset-left));top:8px;bottom:auto}
+body.touch #feed{transform:scale(.72);transform-origin:top left;left:calc(10px + env(safe-area-inset-left));top:120px;bottom:auto!important;max-height:140px}
+body.touch #br{transform:scale(.62);transform-origin:bottom center;right:auto;left:50%;translate:-50% 0;bottom:6px;align-items:center}
+body.touch #compass{transform:translateX(-50%) scale(.75);transform-origin:top center}
+body.touch #modeHud{transform:translateX(-50%) scale(.75);transform-origin:top center}
+body.touch #prompt{top:auto;bottom:150px;pointer-events:auto;touch-action:none}
+body.touch #veh{transform:translateX(-50%) scale(.7);transform-origin:bottom center}
+body.touch .overlay{padding:8px}body.touch .pane{padding:12px!important}
+body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touch #tabs button{flex:none}
+@media (orientation:portrait){body.touch #rotateMsg{display:flex;position:fixed;inset:0;z-index:90;background:#0b0f13;color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;font:600 15px var(--body)}body.touch #rotateMsg b{font:900 26px var(--display);letter-spacing:.06em}}
+@media (max-width:950px){.shopwin,.pane{max-width:100%!important}.grid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))!important}}
+
 .savebox{margin-top:18px;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
 .savebox h4{margin:0;font:800 16px var(--display);letter-spacing:.12em;text-transform:uppercase}
 .saveSt{margin:0;color:#c8d2da;font-size:13px;line-height:1.45}.saveSt code{background:rgba(255,255,255,.1);padding:2px 7px;border-radius:4px;font:700 14px ui-monospace,monospace;color:var(--accent);letter-spacing:.06em}
@@ -407,6 +453,8 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:none
 <body>
 <canvas id="c"></canvas>
 
+<div id="touchUI" class="hidden"></div>
+<div id="rotateMsg"><b>Turn your device sideways</b><span>Stormfall plays in landscape</span></div>
 <div id="hud" class="hidden">
   <div id="speedFx"></div>
   <div id="flare"><b></b><i></i><i></i><i></i><i></i></div>
@@ -523,7 +571,18 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:none
       <p style="grid-column:1/-1;margin:0;font-size:11px;text-transform:none;letter-spacing:0;color:var(--muted)">Music: "Exhilarate", "Volatile Reaction", "Sneaky Adventure", "Hitman" by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0.</p>
       <label for="tod">Time of day<select id="tod"><option value="dynamic" selected>Afternoon into sunset</option><option value="noon">Midday</option><option value="sunset">Golden hour</option></select></label>
     </div>
-    <div class="controls">
+    <div class="controls touchOnly"><dl>
+        <dt>Left stick</dt><dd>Move. Push it all the way forward to sprint</dd>
+        <dt>Drag right side</dt><dd>Look around and aim</dd>
+        <dt>FIRE · AIM</dt><dd>Hold FIRE to shoot or swing · AIM toggles aiming down sights (in build mode it swaps material)</dd>
+        <dt>JUMP · CROUCH</dt><dd>Jump, dive from the plane, open the glider, handbrake in cars · CROUCH toggles crouching</dd>
+        <dt>USE</dt><dd>Glows when you can open a chest, pick something up, open a door or get in a car</dd>
+        <dt>RELOAD · BUILD</dt><dd>Reload your gun · switch to build mode, then tap WALL, FLOOR, RAMP or ROOF and FIRE to place</dd>
+        <dt>Hotbar</dt><dd>Tap a slot to switch weapons or items</dd>
+        <dt>Top buttons</dt><dd>ITEMS inventory · DROP selected item · SHOP · EMOTE · CAM camera view · MAP · II pause</dd>
+        <dt>Driving</dt><dd>The stick steers and drives · USE gets out</dd>
+      </dl></div>
+    <div class="controls kbdOnly">
       <dl>
         <dt>W A S D</dt><dd>Move · Shift sprint · Ctrl crouch · Space jump · Ctrl while sprinting to slide</dd>
         <dt>Mouse</dt><dd>Left fire / swing sword · Right aim down sights · Wheel cycles slots · Middle click pings</dd>
@@ -548,10 +607,10 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:none
 </div>
 
 <div id="editor" class="hidden">
-  <div class="edTop"><b class="edLogo">MAP EDITOR</b><input id="edName" maxlength="32" spellcheck="false"><span id="edStat"></span><button class="btn small" id="edSave">Save</button><button class="btn small blue" id="edPlay">Save and Play</button><button class="btn small ghost" id="edExit">Exit</button></div>
+  <div class="edTop"><b class="edLogo">MAP EDITOR</b><input id="edName" maxlength="32" spellcheck="false"><span id="edStat"></span><button class="btn small ghost" id="edRot">Rotate</button><button class="btn small ghost" id="edUndoB">Undo</button><button class="btn small" id="edSave">Save</button><button class="btn small blue" id="edPlay">Save and Play</button><button class="btn small ghost" id="edExit">Exit</button></div>
   <div class="edSide"><div id="edTools"></div></div>
   <div class="edRight" id="edOpts"></div>
-  <div class="edHint"><b>Move view</b> tool or <b>middle-drag</b>: drag the map · <b>Right-drag</b> turn · <b>Wheel</b> zoom · <b>Left click</b> use tool · <b>[ ]</b> brush size · <b>R</b> rotate · <b>Ctrl+Z</b> undo · <b>WASD / Space / C</b> fly</div>
+  <div class="edHint"><b>Move view</b> tool or <b>middle-drag</b> (touch: drag · pinch to zoom · two fingers to turn): drag the map · <b>Right-drag</b> turn · <b>Wheel</b> zoom · <b>Left click</b> use tool · <b>[ ]</b> brush size · <b>R</b> rotate · <b>Ctrl+Z</b> undo · <b>WASD / Space / C</b> fly</div>
 </div>
 <div id="modes" class="overlay hidden"><div class="shopwin pane">
   <div class="shophead"><h3>Choose a game mode</h3><button class="btn small ghost" id="modeClose">Back</button></div>
@@ -2610,7 +2669,7 @@ function shipWalk(p,dt){if(!ship.mesh||ship.done&&!p.autoJump){p.autoJump=true;}
   if(!p.cab){p.cab={lx:0,lz:0};}const cab=p.cab;p.seat=null;
   let wx=0,wz=0,speed=4.6;
   if(p.autoJump){const tx=CABIN.rampEnd-.2,tz=clamp(cab.lz,-1.2,1.2);const dx=tx-cab.lx,dz=tz-cab.lz,d=Math.hypot(dx,dz);speed=7.5;if(d<.6||!ship.mesh){jumpFromShip(p);return;}wx=dx/d;wz=dz/d;}
-  else{let mx=0,mz=0;if(keys.KeyW)mz-=1;if(keys.KeyS)mz+=1;if(keys.KeyA)mx-=1;if(keys.KeyD)mx+=1;const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
+  else{let mx=0,mz=0;if(keys.KeyW)mz-=1;if(keys.KeyS)mz+=1;if(keys.KeyA)mx-=1;if(keys.KeyD)mx+=1;if(TOUCH.on&&(TOUCH.mx||TOUCH.mz)){mx=TOUCH.mx;mz=TOUCH.mz;}const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
     let gx=fx*-mz+rx*mx,gz=fz*-mz+rz*mx;const l=Math.hypot(gx,gz);if(l>0){gx/=l;gz/=l;}if(keys.ShiftLeft)speed=6.5;
     const s=shipYaw(),c=Math.cos(s),sn=Math.sin(s);wx=gx*c-gz*sn;wz=gx*sn+gz*c;}// world -> plane-local (inverse yaw)
   cab.lx+=wx*speed*dt;cab.lz+=wz*speed*dt;
@@ -3200,7 +3259,7 @@ addEventListener('mouseup',e=>{if(e.button===0)mouseL=false;if(e.button===2)mous
 addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('wheel',e=>{if(gameState!=='play'||!player||!player.alive)return;let n=player.sel+(e.deltaY>0?1:-1);if(n<0)n=NSLOT;if(n>NSLOT)n=0;selectSlot(n);},{passive:true});
 addEventListener('mousemove',e=>{if(gameState!=='play'||paused||uiOpen||(!locked&&!freeLook))return;const k=.0021*SET.sens*(scoped?.22:player&& player.ads?.6:1)*(AA.on?(SET.aa==2?.55:.72):1);yaw-=e.movementX*k;pitch=clamp(pitch-e.movementY*k,-1.45,1.45);});
-function requestLock(){try{const r=canvas.requestPointerLock();if(r&& r.catch)r.catch(()=>{freeLook=true;});}catch(err){freeLook=true;}}
+function requestLock(){if(TOUCH.on){freeLook=true;return;}try{const r=canvas.requestPointerLock();if(r&& r.catch)r.catch(()=>{freeLook=true;});}catch(err){freeLook=true;}}
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===canvas;if(locked){everLocked=true;freeLook=false;paused=false;$('pause').classList.add('hidden');}
   else if(gameState==='play'&& everLocked&&!freeLook&&!uiOpen){paused=true;$('pause').classList.remove('hidden');for(const k in keys)keys[k]=false;mouseL=mouseR=false;}});
 document.addEventListener('pointerlockerror',()=>{freeLook=true;});
@@ -3237,7 +3296,7 @@ function updatePlayer(dt){
   if(p.state==='ship'){shipWalk(p,dt);updateHeld(p);return;}
   if(p.vehicle){driveUpdate(p,dt);return;}
   if(keys.ArrowLeft)yaw+=dt*2.2;if(keys.ArrowRight)yaw-=dt*2.2;if(keys.ArrowUp)pitch=Math.min(1.45,pitch+dt*1.6);if(keys.ArrowDown)pitch=Math.max(-1.45,pitch-dt*1.6);
-  let mx=0,mz=0;if(keys.KeyW)mz-=1;if(keys.KeyS)mz+=1;if(keys.KeyA)mx-=1;if(keys.KeyD)mx+=1;
+  let mx=0,mz=0;if(keys.KeyW)mz-=1;if(keys.KeyS)mz+=1;if(keys.KeyA)mx-=1;if(keys.KeyD)mx+=1;if(TOUCH.on&&(TOUCH.mx||TOUCH.mz)){mx=TOUCH.mx;mz=TOUCH.mz;}
   const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
   let wx=fx*-mz+rx*mx,wz=fz*-mz+rz*mx;const l=Math.hypot(wx,wz);if(l>0){wx/=l;wz/=l;}
   const it=p.item;
@@ -3378,7 +3437,7 @@ function step(dt){
 function applyQuality(){Q=QUAL[SET.quality];sun.shadow.mapSize.set(Q.shadow,Q.shadow);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}
   if(grassMesh){grassMesh.geometry.instanceCount=Q.grass;grassMesh.visible=Q.grass>0;}camera.far=Q.dist+400;scene.fog.density=.0021;applySize();}
 function startGame(){BOT_N=0;
-  SET.skill=+$('diff').value;SET.sens=+$('sens').value;const qv=$('qual').value;AQ.on=qv==='auto';SET.quality=AQ.on?'high':qv;SET.fov=+$('fov').value;SET.aa=+$('aa').value;SET.cam=+$('cam').value;SET.autoReload=$('arl').value!=='0';applyQuality();initAudio();initMatch();
+  SET.skill=+$('diff').value;SET.sens=+$('sens').value;const qv=$('qual').value;AQ.on=qv==='auto';SET.quality=AQ.on?(TOUCH.on?'low':'high'):qv;SET.fov=+$('fov').value;SET.aa=+$('aa').value;SET.cam=+$('cam').value;SET.autoReload=$('arl').value!=='0';applyQuality();initAudio();initMatch();
   if(LOBBY.char){removeCharModel(LOBBY.char);LOBBY.char=null;}if(LOBBY.pet){scene.remove(LOBBY.pet.wrap);LOBBY.pet=null;}if(LOBBY.grp){scene.remove(LOBBY.grp);LOBBY.grp=null;}
   $('menu').classList.add('hidden');$('hud').classList.remove('hidden');
   buildShip();player=new Char('You',true);chars.push(player);player.m.root.visible=false;
@@ -3654,7 +3713,7 @@ function renderPass(){const pct=PROFILE.xp/XP_PER_LVL*100;$('bpInfo').innerHTML=
 function renderCareer(){const s=PROFILE.stats;const kd=(s.kills/Math.max(1,s.matches-s.wins)).toFixed(2);
   $('careerGrid').innerHTML=[[s.matches,'Matches'],[s.wins,'Victory Royales'],[s.kills,'Eliminations'],[kd,'K/D'],[s.top10,'Top 10'],[Math.round(s.dmg),'Damage dealt'],[s.best<99?'#'+s.best:'—','Best placement'],[Math.round(s.time/60)+'m','Time played'],[PROFILE.lvl,'Account level']].map(([v,l])=>`<div><b>${v}</b><small>${l}</small></div>`).join('');}
 function renderCredits(){const row=(w,a,l,u)=>`<div><b>${w}</b><span>${a}</span><em>${l}</em>${u?`<a href="${u}" target="_blank" rel="noopener">source</a>`:''}</div>`;
-  $('creditsList').innerHTML='<h4>Game</h4>'+row('Main updated version','krishnasaigaruda','Lead developer','https://github.com/krishnasaigaruda')+row('Sample version','crasebot1234','Original sample · <a href="sample/sample.html" target="_blank" rel="noopener">Play here</a>','https://github.com/crasebot1234')
+  $('creditsList').innerHTML='<h4>Game</h4>'+row('Main updated version','krishnasaigaruda','Lead developer','https://github.com/krishnasaigaruda')+row('Sample version','crasebot1234','Original sample · <a href="sample/sample.html" target="_blank" rel="noopener" class="sampleLink">Play here</a>','https://github.com/crasebot1234')
     +'<h4>Character models</h4>'+CHAR_MODELS.map(c=>row(c.title+' (skin: '+c.skin+')',c.author,c.license,c.url)).join('')
     +row('Soldier, Michelle, X Bot','Mixamo / three.js examples','Mixamo licence (free use)','https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf')+row('Ready Player Me sample avatar','Ready Player Me / three.js examples','three.js examples','https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf')
     +'<h4>Sidekick models</h4>'+[['Shiba Inu','y4wdQpg767'],['Husky','wcWiuEqwzq'],['Wolf','P1gU3Qkr9r'],['Fox','Bc97C66HKi'],['Cat','qKICY6xla2'],['Birb','gZ2ExU9OAB'],['Dragon','VBvzjFIYws']].map(([n,i])=>row(n,'Quaternius','CC0 1.0','https://poly.pizza/m/'+i)).join('')
@@ -4048,7 +4107,7 @@ function initEditorUI(){const cv=canvas;
   $('edOpts').oninput=e=>{const el=e.target,k=el.dataset.k;if(!k)return;const v=el.value;if(el.type==='range'&& el.previousElementSibling)el.previousElementSibling.textContent=v;
     if(k==='R')ED.R=+v;else if(k==='S')ED.S=+v;else if(k==='hw')ED.house.w=+v;else if(k==='hd')ED.house.d=+v;else if(k==='hs')ED.house.st=+v;else if(k==='hm')ED.house.m=v;else if(k==='ts')ED.towerSt=+v;
     else if(k==='pm')ED.mat=v;else if(k==='tv')ED.treeV=+v;else if(k==='rs')ED.rockS=+v;else if(k==='cv')ED.carV=v;else if(k==='pn')ED.poiName=v;else if(k==='sp')ED.spriteT=v;else if(k==='bots'){CM.meta.bots=+v;ED.dirty=true;edStatus();}else if(k==='bld'){CM.meta.build=v==='1';ED.dirty=true;edStatus();}};
-  $('edSave').onclick=()=>{edSave();};$('edPlay').onclick=()=>{if(edSave())edLeave(true);};
+  $('edSave').onclick=()=>{edSave();};$('edUndoB').onclick=()=>edUndo();$('edRot').onclick=()=>{ED.rot=(ED.rot+1)%4;sfx('click');toast('Rotation '+ED.rot*90+'°');};$('edPlay').onclick=()=>{if(edSave())edLeave(true);};
   $('edExit').onclick=()=>{const b=$('edExit');if(ED.dirty&& !b.dataset.armed){b.dataset.armed='1';b.textContent='Exit without saving?';ED.exitArm=3;return;}edLeave(false);};
   $('edName').oninput=()=>{ED.dirty=true;edStatus();};
   cv.addEventListener('mousemove',e=>{if(gameState!=='edit')return;const r=cv.getBoundingClientRect();ED.mx=(e.clientX-r.left)/r.width*2-1;ED.my=-((e.clientY-r.top)/r.height*2-1);
@@ -4252,14 +4311,83 @@ function renderModes(auto){if(MODE.id==='custom')MODE=MODES.br;$('modeGrid').inn
   $('modeGo').textContent=auto?'Drop in':'Play '+MODE.name;}
 function initChatBar(){const box=$('chatIn');box.addEventListener('keydown',e=>{if(e.key.length===1&& VC.listening)VC.stop();});box.addEventListener('mousedown',e=>{e.stopPropagation();openChat();});box.addEventListener('focus',()=>{if(gameState==='play'){uiOpen='chat';box.classList.add('active');if(document.exitPointerLock&& locked)document.exitPointerLock();}});
   box.addEventListener('blur',()=>{box.classList.remove('active');if(uiOpen==='chat')uiOpen=null;});}
-function initModeUI(){initChatBar();initMyMapsUI();setTimeout(initEditorUI,0);$('modeGrid').onclick=e=>{const c=e.target.closest('.modec');if(!c)return;MODE=MODES[c.dataset.m];try{sessionStorage.setItem('stormfall.mode',MODE.id);}catch(err){}renderModes();sfx('ui');};
+// ============================================================ PHONES & TABLETS: on-screen joystick, look-drag and buttons
+// Buttons send the same key presses the keyboard does, so every action (E, R, building, map, pause, the plane jump) works unchanged.
+const TOUCH={on:/[?&]touch=1/.test(location.search)||(matchMedia('(pointer:coarse)').matches&& !matchMedia('(pointer:fine)').matches)||/iPhone|iPad|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&& navigator.maxTouchPoints>1),mx:0,mz:0,stick:null,look:null};
+function tKey(code,down){dispatchEvent(new KeyboardEvent(down?'keydown':'keyup',{code,bubbles:true}));if(!down)keys[code]=false;}
+addEventListener('click',e=>{const a=e.target.closest&& e.target.closest('a.sampleLink');if(a&& TOUCH.on){e.preventDefault();toast('This version is not made for phones or tablets. Play it on a computer.');}},true);
+const EDT={pts:new Map(),mode:null,moved:0,last:null};
+function edTouch(e,ph){if(e.target.closest&& e.target.closest('.edSide,.edRight,.edTop,.edHint')&& !EDT.pts.size)return;// let the editor's own buttons and sliders get normal taps
+  e.preventDefault();const r=canvas.getBoundingClientRect();const setXY=t=>{ED.mx=(t.clientX-r.left)/r.width*2-1;ED.my=-((t.clientY-r.top)/r.height*2-1);};
+  for(const t of e.changedTouches){if(ph==='end')EDT.pts.delete(t.identifier);else{const prev=EDT.pts.get(t.identifier);EDT.pts.set(t.identifier,{x:t.clientX,y:t.clientY,px:prev?prev.x:t.clientX,py:prev?prev.y:t.clientY});}}
+  const pts=[...EDT.pts.values()];
+  if(pts.length>=2){if(ED.down){ED.down=false;if(ED.stroke){edPush(ED.stroke);ED.stroke=null;}}EDT.mode='two';const [a,b]=pts;
+    const d0=Math.hypot(a.px-b.px,a.py-b.py),d1=Math.hypot(a.x-b.x,a.y-b.y);const cp=Math.cos(ED.pitch),f=new V3(-Math.sin(ED.yaw)*cp,Math.sin(ED.pitch),-Math.cos(ED.yaw)*cp);const h=Math.max(4,ED.pos.y-terrainH(ED.pos.x,ED.pos.z));
+    ED.pos.addScaledVector(f,(d1-d0)*(h*.006+.05));const mx=((a.x-a.px)+(b.x-b.px))/2,my=((a.y-a.py)+(b.y-b.py))/2;ED.yaw-=mx*.005;ED.pitch=clamp(ED.pitch-my*.005,-1.5,1.2);
+    for(const p of pts){p.px=p.x;p.py=p.y;}return;}
+  const t=e.changedTouches[0];if(!t)return;setXY(t);
+  if(ph==='start'&& pts.length===1){EDT.mode='one';EDT.moved=0;edUpdateHit();if(ED.tool==='hand')return;
+    if(TERRAIN_TOOLS.includes(ED.tool)){ED.down=true;ED.stroke={k:'terrain',hm:CM.hm.slice(),pm:CM.pm.slice()};if(ED.hit){ED.flatY=terrainH(ED.hit.x,ED.hit.z);edBrush(1/30);ED.lastBrush=performance.now();}}return;}
+  if(ph==='move'&& EDT.mode==='one'&& pts.length===1){const p=pts[0];const dx=p.x-p.px,dy=p.y-p.py;EDT.moved+=Math.hypot(dx,dy);p.px=p.x;p.py=p.y;
+    if(ED.tool==='hand'||!TERRAIN_TOOLS.includes(ED.tool)&& EDT.moved>12){const k=Math.max(.06,(ED.pos.y-terrainH(ED.pos.x,ED.pos.z))*.0028+.04);const fx=-Math.sin(ED.yaw),fz=-Math.cos(ED.yaw),rx=Math.cos(ED.yaw),rz=-Math.sin(ED.yaw);ED.pos.x-=(rx*dx-fx*dy)*k;ED.pos.z-=(rz*dx-fz*dy)*k;return;}
+    if(ED.down){const now=performance.now();if(now-(ED.lastBrush||0)>33){const d=Math.min(.1,(now-(ED.lastBrush||now-33))/1000);ED.lastBrush=now;edUpdateHit();if(ED.hit)edBrush(d);}}return;}
+  if(ph==='end'&& pts.length===0){if(EDT.mode==='one'){if(ED.down){ED.down=false;if(ED.stroke){edPush(ED.stroke);ED.stroke=null;}if(ED.sb){const b=ED.sb;ED.sb=null;cmRefresh(b.x0,b.z0,b.x1,b.z1,true);}}
+      else if(ED.tool!=='hand'&& !TERRAIN_TOOLS.includes(ED.tool)&& EDT.moved<12){edUpdateHit();edPlace();}}EDT.mode=null;}}
+function initTouch(){if(!TOUCH.on)return;document.body.classList.add('touch');freeLook=true;
+  const ui=$('touchUI');ui.classList.remove('hidden');
+  const B=(id,label,cls)=>`<button class="tb ${cls||''}" data-b="${id}">${label}</button>`;
+  ui.innerHTML=`<div id="tStick"><div id="tKnob"></div></div>
+    <div id="tBtns">${B('fire','FIRE','big')}${B('aim','AIM')}${B('jump','JUMP')}${B('crouch','CROUCH')}${B('reload','RELOAD')}${B('use','USE')}${B('build','BUILD')}</div>
+    <div id="tBuild">${B('KeyZ','WALL')}${B('KeyX','FLOOR')}${B('KeyC','RAMP')}${B('KeyV','ROOF')}${B('KeyG','EDIT')}</div>
+    <div id="tChat" class="hidden">${B('chatSend','SEND','sm')}${B('chatX','✕','sm')}</div>
+    <div id="tScope" class="hidden">${B('ShiftLeft','STEADY')}</div>
+    <div id="tSpec" class="hidden">${B('ArrowLeft','◀ PREV','sm')}${B('Space','NEXT ▶','sm')}${B('Escape','RESULTS','sm')}</div>
+    <div id="tTop">${B('Tab','ITEMS','sm')}${B('KeyH','DROP','sm')}${B('KeyU','SHOP','sm')}${B('KeyT','EMOTE','sm')}${B('KeyP','CAM','sm')}${B('KeyL','SIDE','sm')}${B('ping','PING','sm')}${B('chat','CHAT','sm')}${B('mic','HOLD TO TALK','sm mic')}${B('KeyM','MAP','sm')}${B('Escape','II','sm')}</div>`;
+  $('invClose').textContent='Close';$('shopClose').textContent='Close';
+  const stick=$('tStick'),knob=$('tKnob');
+  const stickMove=(t)=>{const r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,R=r.width/2;let dx=t.clientX-cx,dy=t.clientY-cy;const d=Math.hypot(dx,dy);if(d>R){dx*=R/d;dy*=R/d;}
+    knob.style.transform=`translate(${dx}px,${dy}px)`;TOUCH.mx=dx/R;TOUCH.mz=dy/R;const m=Math.hypot(TOUCH.mx,TOUCH.mz);
+    keys.KeyW=TOUCH.mz<-.35;keys.KeyS=TOUCH.mz>.35;keys.KeyA=TOUCH.mx<-.35;keys.KeyD=TOUCH.mx>.35;keys.ShiftLeft=m>.92&& TOUCH.mz<-.5;};
+  const stickEnd=()=>{TOUCH.stick=null;TOUCH.mx=TOUCH.mz=0;knob.style.transform='';keys.KeyW=keys.KeyS=keys.KeyA=keys.KeyD=keys.ShiftLeft=false;};
+  const held={};
+  const press=(b,down)=>{const id=b.dataset.b;b.classList.toggle('on',down);
+    if(id==='fire'){mouseL=down;if(down)mouseLPressed=true;return;}
+    if(id==='ping'){if(down)placePing();return;}
+    if(id==='chat'){if(down){openChat();}return;}
+    if(id==='chatSend'){if(down)sendChat();return;}
+    // push-to-talk: hold to speak, let go to send what was heard
+    if(id==='mic'){if(down){if(uiOpen!=='chat')openChat();else if(!VC.listening)VC.listen();}else{const box=$('chatIn');setTimeout(()=>{VC.stop();if(uiOpen==='chat'){if(box.value.trim())sendChat();else{box.value='';sendChat();toast('Did not catch that. Hold the mic and speak');}}},700);}return;}
+    if(id==='chatX'){if(down){$('chatIn').value='';sendChat();}return;}
+    if(id==='aim'){if(down){if(buildMode&& player){const i=MAT_ORDER.indexOf(player.mat);player.mat=MAT_ORDER[(i+1)%MAT_ORDER.length];sfx('click');}else{mouseR=!mouseR;AA.adsT=gameTime;}}return;}
+    if(id==='crouch'){if(down){held.crouch=!held.crouch;tKey('ControlLeft',held.crouch);}b.classList.toggle('on',!!held.crouch);return;}
+    const code={jump:'Space',reload:'KeyR',use:'KeyE',build:'KeyQ'}[id]||id;tKey(code,down);};
+  // one handler for every finger: joystick, buttons, or look-drag on the rest of the screen
+  const onStart=e=>{if(!TOUCH.ttsOk&& window.speechSynthesis){TOUCH.ttsOk=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}catch(err){}}
+    if(gameState==='edit'){edTouch(e,'start');return;}if(gameState!=='play'&& !(gameState==='over'&& spec))return;initAudio();for(const t of e.changedTouches){const el=document.elementFromPoint(t.clientX,t.clientY);
+      const b=el&& el.closest('.tb');if(b){e.preventDefault();held[t.identifier]=b;press(b,true);continue;}
+      if(el&& el.closest('#tStick')&& TOUCH.stick==null){e.preventDefault();TOUCH.stick=t.identifier;stickMove(t);continue;}
+      if(el&& el.closest('#prompt')){e.preventDefault();tKey('KeyE',true);setTimeout(()=>tKey('KeyE',false),60);continue;}
+      const sl=el&& el.closest('.slot');if(sl&& el.closest('#hotbar')){e.preventDefault();const i=[...sl.parentNode.children].indexOf(sl);selectSlot(i);continue;}
+      if(el&&(el===canvas||el.closest('#hud'))&& !el.closest('#chatIn')&& TOUCH.look==null&& t.clientX>innerWidth*.35){e.preventDefault();TOUCH.look={id:t.identifier,x:t.clientX,y:t.clientY};}}};
+  const onMove=e=>{if(gameState==='edit'){edTouch(e,'move');return;}for(const t of e.changedTouches){if(t.identifier===TOUCH.stick){e.preventDefault();stickMove(t);}
+      else if(TOUCH.look&& t.identifier===TOUCH.look.id){e.preventDefault();const dx=t.clientX-TOUCH.look.x,dy=t.clientY-TOUCH.look.y;TOUCH.look.x=t.clientX;TOUCH.look.y=t.clientY;
+        if(paused||uiOpen)continue;const k=.0052*SET.sens*(scoped?.25:player&& player.ads?.6:1);yaw-=dx*k;pitch=clamp(pitch-dy*k,-1.45,1.45);}}};
+  const onEnd=e=>{if(gameState==='edit'){edTouch(e,'end');return;}for(const t of e.changedTouches){if(t.identifier===TOUCH.stick)stickEnd();if(TOUCH.look&& t.identifier===TOUCH.look.id)TOUCH.look=null;const b=held[t.identifier];if(b){delete held[t.identifier];press(b,false);}}};
+  addEventListener('touchstart',onStart,{passive:false});addEventListener('touchmove',onMove,{passive:false});addEventListener('touchend',onEnd);addEventListener('touchcancel',onEnd);
+  // no pinch-zoom / double-tap zoom / page bounce while playing
+  for(const ev of ['gesturestart','gesturechange'])addEventListener(ev,e=>e.preventDefault(),{passive:false});
+  const fit=()=>document.body.style.setProperty('--ts',Math.max(.55,Math.min(1,innerHeight/470)).toFixed(3));fit();addEventListener('resize',fit);
+  setInterval(()=>{document.body.classList.toggle('building',!!buildMode);const ub=ui.querySelector('[data-b=use]');if(ub){const pr=$('prompt'),on=!pr.classList.contains('hidden');ub.classList.toggle('ready',on);const tx=on?pr.textContent.replace(/^E/,'').toLowerCase():'';
+      const lab=!on?'USE':/exit/.test(tx)?'EXIT':/drive|ride|get in/.test(tx)?'DRIVE':/swap/.test(tx)?'SWAP':/open|chest|drop|llama/.test(tx)&& !/door/.test(tx)?'OPEN':/door/.test(tx)?'DOOR':/buy|vend|shop|upgrade/.test(tx)?'BUY':/pick|grab|take/.test(tx)?'PICK UP':'USE';if(ub.textContent!==lab)ub.textContent=lab;}
+    const sb=ui.querySelector('[data-b=KeyU]');if(sb)sb.style.display=MODE.id==='hg'?'none':'';const specOn=gameState==='over'&& !!spec;ui.classList.toggle('hidden',gameState!=='play'&& !specOn);ui.classList.toggle('spectating',specOn);$('tSpec').classList.toggle('hidden',!specOn);$('tScope').classList.toggle('hidden',!scoped);$('tChat').classList.toggle('hidden',uiOpen!=='chat');const mb=ui.querySelector('[data-b=mic]');if(mb)mb.style.display=VC.on()?'':'none';$('tBuild').classList.toggle('hidden',!buildMode);const bb=ui.querySelector('[data-b=build]');if(bb)bb.style.display=MODE.build?'':'none';},150);}
+function initModeUI(){initChatBar();initTouch();initMyMapsUI();setTimeout(initEditorUI,0);$('modeGrid').onclick=e=>{const c=e.target.closest('.modec');if(!c)return;MODE=MODES[c.dataset.m];try{sessionStorage.setItem('stormfall.mode',MODE.id);}catch(err){}renderModes();sfx('ui');};
   $('modeClose').onclick=()=>$('modes').classList.add('hidden');
   $('modeGo').onclick=()=>{if(MODE.world!==WORLD){try{sessionStorage.setItem('stormfall.mode',MODE.id);sessionStorage.setItem('stormfall.modego','1');}catch(err){}$('fade').style.opacity=1;setTimeout(()=>location.reload(),450);return;}
     $('modes').classList.add('hidden');initAudio();$('fade').style.opacity=1;setTimeout(()=>{startGame();setTimeout(()=>$('fade').style.opacity=0,120);},460);};
   $('modeName').textContent=MODE.name;
   // came back from a map switch: start the chosen mode right away (one click, not two)
   let go=false;try{go=sessionStorage.getItem('stormfall.modego')==='1';sessionStorage.removeItem('stormfall.modego');}catch(err){}
-  if(go){$('fade').style.opacity=1;setTimeout(()=>{startGame();centerMsg(MODE.name.toUpperCase(),'Click to take control');setTimeout(()=>$('fade').style.opacity=0,150);},200);}
+  if(go){$('fade').style.opacity=1;setTimeout(()=>{startGame();centerMsg(MODE.name.toUpperCase(),TOUCH.on?'Tap to play':'Click to take control');setTimeout(()=>$('fade').style.opacity=0,150);},200);}
   addEventListener('pointerdown',()=>{if(AC&& AC.state==='suspended')AC.resume();});}
 // ============================================================ BOOT
 function setLoad(p,txt){$('loadFill').style.width=(p*100)+'%';if(txt)$('loadTxt').textContent=txt;}
