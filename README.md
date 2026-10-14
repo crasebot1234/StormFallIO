@@ -60,7 +60,7 @@ Stormfall switches to touch controls automatically on phones and iPads:
 - **Spectating:** PREV, NEXT and RESULTS.
 - **Map editor:** one finger uses the current tool (drag the view, paint or sculpt, tap to place). Pinch to zoom, drag with two fingers to turn. Rotate and Undo are in the top bar.
 
-Hold the device sideways. On a computer you can force touch controls by adding `?touch=1` to the address. The original sample version (Credits → Play here) is keyboard and mouse only.
+Hold the device sideways. Touchscreen laptops (common on Windows) stay on keyboard and mouse whenever a mouse or trackpad is present. **Settings → Gameplay → Controls** can force Keyboard and mouse or Touch, and `?touch=1` or `?touch=0` in the address does the same for one visit. A **How to Play** tab in the lobby explains the game, and a What's new window opens once each time the game is opened. The original sample version (Credits → Play here) is keyboard and mouse only.
 
 ## Controls
 
