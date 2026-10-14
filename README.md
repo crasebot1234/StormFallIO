@@ -27,7 +27,7 @@ You need **Python 3** (already on every Mac) and a modern browser (Chrome recomm
 
 If `./start.sh` says "permission denied", run `chmod +x start.sh` once, or just run `python3 -m http.server 8080`.
 
-The game has to be opened through a server (the website, or `./start.sh`), not by double-clicking the HTML file, so the browser can load the 3D models and music in `assets/`.
+The game has to be opened through a server (the website, or `./start.sh`), not by double-clicking the HTML file. Otherwise the browser blocks the 3D models (such as sidekicks) in `assets/`, and the game shows a warning.
 
 ## Analytics
 

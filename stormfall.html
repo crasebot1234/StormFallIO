@@ -4106,10 +4106,14 @@ const SIDEKICK_BY={};for(const s of SIDEKICKS)SIDEKICK_BY[s.id]=s;
 COS.sidekick={list:SIDEKICKS,by:SIDEKICK_BY,label:'Sidekicks'};
 for(const k in COS)for(const it of COS[k].list)if(it.price>0)it.price*=2;
 const PETS={},PET_FACE=Math.PI;let petsLoading=false;
-function loadPets(){if(petsLoading||!THREE.GLTFLoader)return;petsLoading=true;const L=new THREE.GLTFLoader();
-  for(const f of [...new Set(SIDEKICKS.filter(s=>s.file).map(s=>s.file))])L.load('assets/models/pets/'+f+'.glb',g=>{PETS[f]=g;
+// sidekick models load in the background; a failed download (slow or flaky connection) is retried instead of leaving that pet missing
+const PET_LOADING=new Set();
+function loadPetFile(f,tries){if(PETS[f]||PET_LOADING.has(f)||!THREE.GLTFLoader)return;PET_LOADING.add(f);
+  new THREE.GLTFLoader().load('assets/models/pets/'+f+'.glb',g=>{PET_LOADING.delete(f);PETS[f]=g;
     for(const k in THUMB.cache)if(k.startsWith('sidekick|'))delete THUMB.cache[k];
-    if(menuTab==='locker'&& lockCat==='sidekick')renderLocker();if(menuTab==='shop')renderItemShop();if(LOBBY.grp&& !LOBBY.pet)spawnLobbyPet();},undefined,()=>{});}
+    if(menuTab==='locker'&& lockCat==='sidekick')renderLocker();if(menuTab==='shop')renderItemShop();if(LOBBY.grp&& !LOBBY.pet)spawnLobbyPet();},undefined,
+    err=>{PET_LOADING.delete(f);console.warn('Sidekick model failed to load:',f,err);if(tries<5)setTimeout(()=>loadPetFile(f,tries+1),1500*(tries+1));});}
+function loadPets(){petsLoading=true;for(const f of [...new Set(SIDEKICKS.filter(s=>s.file).map(s=>s.file))])loadPetFile(f,0);}
 function makePet(id){const d=SIDEKICK_BY[id];if(!d||!d.file)return null;const g=PETS[d.file];if(!g||!THREE.SkeletonUtils)return null;
   const root=THREE.SkeletonUtils.clone(g.scene);root.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(root);const s=d.h/Math.max(.001,b.max.y-b.min.y);root.scale.multiplyScalar(s);
   root.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(root);root.position.y-=b2.min.y;root.rotation.y=PET_FACE;
@@ -4128,7 +4132,7 @@ function attachPet(pt,owner){pt.owner=owner;pt.maxHp=PET_HP[pt.def.rar]||80;pt.h
   scene.add(pt.wrap);pt.wrap.visible=false;SK.pets.push(pt);return pt;}
 function removePet(pt){scene.remove(pt.wrap);arrRemove(hittables,pt.hb);arrRemove(charHB,pt.hb);arrRemove(SK.pets,pt);if(SK.pet===pt)SK.pet=null;}
 const PETS_ALLOWED=()=>['br','nobuild','custom'].includes(MODE.id);
-function initSidekick(){for(const pt of SK.pets.slice())removePet(pt);SK.pet=null;for(const c of chars)c.petId=null;if(!PETS_ALLOWED())return;
+function initSidekick(){for(const pt of SK.pets.slice())removePet(pt);SK.pet=null;for(const c of chars)c.petId=null;if(!PETS_ALLOWED())return;loadPets();
   if(PROFILE.eq.sidekick!=='none'){const pt=makePet(PROFILE.eq.sidekick);if(pt){attachPet(pt,player);SK.pet=pt;}return;}
   // only one sidekick per match: if you have none, one random enemy brings one (weak ones are more common)
   const pool=[['cat',5],['shiba',5],['fox',3],['husky',3],['birb',2],['wolf',2],['dragon',1]];const tot=pool.reduce((a,x)=>a+x[1],0);
@@ -4851,6 +4855,9 @@ function boot(){
     setLoad(steps.length/(steps.length+1),'Loading characters…');requestAnimationFrame(loop);
     loadModels().then(()=>{try{buildLobby();}catch(err){console.error(err);}initMenuUI();initShopUI();initPauseUI();initModeUI();initHowtoUI();setLoad(1,'Ready');
       setTimeout(()=>{$('loading').classList.add('hidden');$('splash').style.opacity=0;setTimeout(()=>$('splash').classList.add('hidden'),800);$('play').disabled=false;setTimeout(maybeWelcome,500);
+        // opened by double-clicking the file: the browser blocks the 3D models (sidekicks, characters) from loading
+        if(location.protocol==='file:'){const w=document.createElement('div');w.style.cssText='position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:40;max-width:min(640px,92vw);background:#5a1410;border:1px solid #ff7a6a;border-radius:8px;padding:10px 16px;font:600 14px var(--body);color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.5);text-align:center';
+          w.innerHTML='This copy was opened as a file, so the browser blocks the 3D models and sidekicks. Play it from the website instead.';document.body.appendChild(w);}
         let auto=false;try{auto=sessionStorage.getItem('stormfall.autoplay')==='1';sessionStorage.removeItem('stormfall.autoplay');}catch(err){}if(auto)toast('Press PLAY to drop in again');},250);});};
   next();}
 setTimeout(()=>{try{boot();}catch(err){console.error(err);sfError(err.message);}},60);
