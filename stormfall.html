@@ -780,7 +780,7 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
 <script>if(!window.THREE)document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
 <script src="assets/js/GLTFLoader.js"></script>
 <script src="assets/js/SkeletonUtils.js"></script>
-<script>if(window.THREE&&!THREE.GLTFLoader){document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"><\/script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"><\/script>');}</script>
+<script>if(window.THREE&&!THREE.GLTFLoader)document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"><\/script>');if(window.THREE&&!THREE.SkeletonUtils)document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"><\/script>');</script>
 <script>
 /* Stormfall — realistic edition. Requires three.js r128 (global THREE). */
 'use strict';
@@ -3725,9 +3725,13 @@ let toastT=null;function toast(msg){let el=document.querySelector('.toast');if(!
 
 // ---------- rigged character models ----------
 const MODELS={};let modelsReady=false;
+// copies of assets/ served from the GitHub repo: used when the local file can't be read
+// (e.g. stormfall.html opened by double-clicking it in Chrome or Edge, which block local model files)
+const ASSET_MIRRORS=['https://cdn.jsdelivr.net/gh/krishnasaigaruda/StormFallIO@main/assets/','https://raw.githubusercontent.com/krishnasaigaruda/StormFallIO/main/assets/'];
+const assetURLs=p=>['assets/'+p,...ASSET_MIRRORS.map(m=>m+p)];
 function loadModels(){return new Promise(res=>{if(!THREE.GLTFLoader||!THREE.SkeletonUtils){modelsReady=true;res();return;}const list=[['xbot','Xbot.glb'],['soldier','Soldier.glb'],['michelle','Michelle.glb'],['rpm','readyplayer.me.glb'],...CHAR_MODELS.map(c=>['c_'+c.id,'chars/'+c.id+'.glb'])];let left=list.length;
   const done=()=>{if(--left<=0&&!modelsReady){modelsReady=true;res();}};
-  for(const [k,f] of list){const urls=f.startsWith('chars/')?['assets/models/'+f]:['assets/models/'+f,'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/'+f];
+  for(const [k,f] of list){const urls=f.startsWith('chars/')?assetURLs('models/'+f):[...assetURLs('models/'+f),'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/'+f];
     const fbx=/\.fbx$/.test(f);if(fbx&& !THREE.FBXLoader){done();continue;}
     const tryUrl=i=>{if(i>=urls.length){done();return;}(fbx?new THREE.FBXLoader():new THREE.GLTFLoader()).load(urls[i],g=>{try{MODELS[k]=prepModel(fbx?g:g.scene);}catch(e){console.warn(e);}done();},undefined,()=>tryUrl(i+1));};tryUrl(fbx?0:0);}
   // avatars the player imported in the Locker
@@ -3851,7 +3855,8 @@ function musicMode(){if(gameState==='menu')return 'lobby';if(gameState!=='play'|
 const MIX={lobby:{pad:.5,bass:.5,arp:.32,drum:.5,lead:.22},drop:{pad:.4,bass:.6,arp:.38,drum:.65,lead:.28},explore:{pad:.42,bass:.12,arp:.14,drum:0,lead:0},fight:{pad:.3,bass:.6,arp:.25,drum:.7,lead:0},end:{pad:.35,bass:0,arp:.1,drum:0,lead:0}};
 // real recorded tracks (assets/music) crossfade by mode; the synth layers only play if the files can't load
 const TRACKS={lobby:'lobby.mp3',drop:'drop.mp3',explore:'explore.mp3',fight:'fight.mp3'};const TR={};let tracksOK=false;
-function initTracks(){for(const k in TRACKS){const a=new Audio('assets/music/'+TRACKS[k]);a.loop=true;a.preload='auto';a.volume=0;a.addEventListener('canplay',()=>{tracksOK=true;},{once:true});TR[k]=a;}}
+function initTracks(){for(const k in TRACKS){const urls=assetURLs('music/'+TRACKS[k]);urls.splice(1,0,urls.pop());/* local, then GitHub raw (fast for big files), then jsdelivr */
+    const a=new Audio(urls[0]);let i=0;a.addEventListener('error',()=>{if(++i<urls.length){a.src=urls[i];a.load();}});a.loop=true;a.preload='auto';a.volume=0;a.addEventListener('canplay',()=>{tracksOK=true;},{once:true});TR[k]=a;}}
 function tracksTick(dt){const m=musicMode();for(const k in TR){const a=TR[k];const want=(k===m||(m==='end'&& k==='explore'))?MUSIC.vol*(k==='explore'?.55:.5):0;
     a.volume=clamp(a.volume+(want-a.volume)*Math.min(1,dt*1.2),0,1);if(want>0&& a.paused){a.play().catch(()=>{});}if(want===0&& a.volume<.01&& !a.paused)a.pause();}}
 let lastTT=0;
@@ -4109,10 +4114,11 @@ const PETS={},PET_FACE=Math.PI;let petsLoading=false;
 // sidekick models load in the background; a failed download (slow or flaky connection) is retried instead of leaving that pet missing
 const PET_LOADING=new Set();
 function loadPetFile(f,tries){if(PETS[f]||PET_LOADING.has(f)||!THREE.GLTFLoader)return;PET_LOADING.add(f);
-  new THREE.GLTFLoader().load('assets/models/pets/'+f+'.glb',g=>{PET_LOADING.delete(f);PETS[f]=g;
+  // the local file first, then the GitHub mirrors in turn (works even when the page was opened as a file)
+  const urls=assetURLs('models/pets/'+f+'.glb');new THREE.GLTFLoader().load(urls[tries%urls.length],g=>{PET_LOADING.delete(f);PETS[f]=g;
     for(const k in THUMB.cache)if(k.startsWith('sidekick|'))delete THUMB.cache[k];
     if(menuTab==='locker'&& lockCat==='sidekick')renderLocker();if(menuTab==='shop')renderItemShop();if(LOBBY.grp&& !LOBBY.pet)spawnLobbyPet();},undefined,
-    err=>{PET_LOADING.delete(f);console.warn('Sidekick model failed to load:',f,err);if(tries<5)setTimeout(()=>loadPetFile(f,tries+1),1500*(tries+1));});}
+    err=>{PET_LOADING.delete(f);console.warn('Sidekick model failed to load:',f,err);if(tries<5)setTimeout(()=>loadPetFile(f,tries+1),tries?1500*tries:0);});}
 function loadPets(){petsLoading=true;for(const f of [...new Set(SIDEKICKS.filter(s=>s.file).map(s=>s.file))])loadPetFile(f,0);}
 function makePet(id){const d=SIDEKICK_BY[id];if(!d||!d.file)return null;const g=PETS[d.file];if(!g||!THREE.SkeletonUtils)return null;
   const root=THREE.SkeletonUtils.clone(g.scene);root.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(root);const s=d.h/Math.max(.001,b.max.y-b.min.y);root.scale.multiplyScalar(s);
@@ -4855,9 +4861,6 @@ function boot(){
     setLoad(steps.length/(steps.length+1),'Loading characters…');requestAnimationFrame(loop);
     loadModels().then(()=>{try{buildLobby();}catch(err){console.error(err);}initMenuUI();initShopUI();initPauseUI();initModeUI();initHowtoUI();setLoad(1,'Ready');
       setTimeout(()=>{$('loading').classList.add('hidden');$('splash').style.opacity=0;setTimeout(()=>$('splash').classList.add('hidden'),800);$('play').disabled=false;setTimeout(maybeWelcome,500);
-        // opened by double-clicking the file: the browser blocks the 3D models (sidekicks, characters) from loading
-        if(location.protocol==='file:'){const w=document.createElement('div');w.style.cssText='position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:40;max-width:min(640px,92vw);background:#5a1410;border:1px solid #ff7a6a;border-radius:8px;padding:10px 16px;font:600 14px var(--body);color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.5);text-align:center';
-          w.innerHTML='This copy was opened as a file, so the browser blocks the 3D models and sidekicks. Play it from the website instead.';document.body.appendChild(w);}
         let auto=false;try{auto=sessionStorage.getItem('stormfall.autoplay')==='1';sessionStorage.removeItem('stormfall.autoplay');}catch(err){}if(auto)toast('Press PLAY to drop in again');},250);});};
   next();}
 setTimeout(()=>{try{boot();}catch(err){console.error(err);sfError(err.message);}},60);
