@@ -2,14 +2,6 @@
 
 A 3D battle royale that runs in your browser, built with three.js. Drop from a cargo plane, loot chests and llamas, build, fight 30 players and outlast the storm. Or play the Hunger Games, Team Deathmatch, or a map you made yourself.
 
-## Put it on the web (Cloudflare Pages)
-
-Stormfall is plain files, so no server code is needed.
-
-1. In the Cloudflare dashboard go to **Workers & Pages → Create → Pages → Upload assets** (or connect a GitHub repo).
-2. Upload this folder: `index.html`, `stormfall.html`, `assets/` and `sample/`. Leave out the `save/` folder if it's there; it's an old local copy of a profile.
-3. Open your `*.pages.dev` address. `index.html` sends visitors straight to the game.
-
 ## Play it on your own computer
 
 You need **Python 3** (already on every Mac) and a modern browser (Chrome recommended).
@@ -29,10 +21,6 @@ If `./start.sh` says "permission denied", run `chmod +x start.sh` once, or just 
 
 You can also just open `stormfall.html` in a browser. Safari and Firefox load everything from the folder; Chrome and Edge block local model files, so the game downloads any 3D model, sidekick, library or music file it can't read from the GitHub repo instead (through jsdelivr or GitHub's raw files; this needs an internet connection).
 
-## Analytics
-
-Google Analytics is built in but off until you add your Measurement ID. In `stormfall.html`, near the top, set `window.SF_GA_ID='G-XXXXXXXXXX';`. It only runs on the website, never on localhost. Besides page views it records `match_start` (mode, bot difficulty, touch) and `match_end` (mode, win or loss, kills, match length).
-
 ## Saving
 
 Your progress is saved automatically in your browser: level, XP, Storm Bucks, the skins, tools, gliders, emotes and sidekicks you own, settings, career stats, the sprites you've found, and every map you made.
@@ -48,6 +36,29 @@ Each browser keeps its own save. To move your progress to another browser or com
 | **Hunger Games** | 36 tributes on pedestals around the Cornucopia, with no storm and building allowed. Districts, the Careers, chests that take 2 seconds to open, sponsors, a feast and a chest refill. The Gamemakers force you to run with a forest fire, poison fog and tracker jacker swarms (water protects you from the fog and the swarm). The arena's force field closes in after a few minutes. The arena is also full of hidden traps (mines, spike pits and net snares), rigged chests (look for a red tripwire), Peacekeeper drones guarding Capitol caches of Epic loot, and berry bushes (red berries heal; the near-black ones are poisonous nightlock). In the finale, mutts hunt anyone outside a shrinking ring around the Cornucopia. |
 | **Team Deathmatch** | 12 vs 12 in the City. Respawns, infinite ammo, first team to 30 eliminations. |
 | **My Maps** | Build your own island in the map editor and play a Battle Royale on it. |
+
+## Monthly events
+
+Every month has a 3-day event. Day 1 is a warm-up, day 2 is the main event and day 3 is the encore. All three days change how the island looks and give 1.5× XP. Day 2 adds the event's special and gives 2× XP, and your first match on day 2 earns that event's outfit plus 300 Storm Bucks. The **Events** tab in the lobby shows the whole year.
+
+| Month | Event (main day) | Special on the main day |
+|---|---|---|
+| January | New Year Countdown (Jan 1) | Night with fireworks; a midnight countdown gives everyone 50 shield |
+| February | Heartfest (Feb 14) | Eliminations heal 30; love potions |
+| March | Lucky Day (Mar 17) | Rainbows with pots of gold; four-leaf clovers make chests Rare or better |
+| April | Easter Egg Hunt (Easter Sunday) | Golden eggs, each with a 50% chance to hatch a sidekick |
+| May | Spring Fling (May 1) | Low gravity, giant heads, prank chests |
+| June | Summer Solstice (Jun 21) | Ice pops, beach balls, swimming heals |
+| July | Fireworks Festival (Jul 4) | Firework crates, a firework for every elimination, a grand finale |
+| August | Meteor Shower (Aug 12) | Meteors strike marked spots and leave Epic crates |
+| September | Harvest Moon (Sep 22) | Huge orange moon, double materials, scarecrows with loot |
+| October | Halloween Night (Oct 31) | Trick-or-treat pumpkins, jack-o'-lanterns, the red-moon Witching Hour, ghosts |
+| November | Harvest Feast (US Thanksgiving) | Wild turkeys and pies that heal |
+| December | Winterfest (Dec 25) | Snow, presents, and a sleigh that drops more presents |
+
+Easter moves every year and is sometimes in late March. To preview any event on any day, add `?event=halloween&eventday=2` to the address (use the event's id: `newyear`, `hearts`, `lucky`, `easter`, `fling`, `solstice`, `fireworks`, `meteor`, `harvest`, `halloween`, `feast`, `winter`). Previews give no rewards and keep no hatched sidekicks.
+
+There are 100 sidekicks. Seven are sold in the Item Shop; the other 93 (every pet in 13 colourways, plus Eggbert and Bunbun) can only be hatched from golden eggs.
 
 ## Phones and tablets
 
@@ -86,7 +97,7 @@ Hold the device sideways. Touchscreen laptops (common on Windows) stay on keyboa
 
 - **Weapons:** seven rarities (Common to Mythic and Exotic), ballistic bullets, aim assist (Off, Low, Medium, or High, where your bullets curve onto targets) and a sniper scope. Exotic rocket launchers lock on.
 - **Bots:** they loot chests, llamas and supply drops, swap for better gear, heal, build cover, drive cars and chat (with optional voice).
-- **Sidekicks:** buyable pets that follow you and fight in short bursts. One per match, in Battle Royale and No Build only.
+- **Sidekicks:** 100 pets that follow you and fight in short bursts. Seven can be bought; the rest hatch from Easter eggs. One per match, in Battle Royale and No Build only.
 - **Sprites:** ultra-rare elemental creatures (Air, Water, Fire, Earth) that give you a power for the match. Track the ones you've found in the Sprites tab.
 - **Shop and progress:** an Item Shop, Locker, Battle Pass, Career stats and Storm Bucks (150 for each win).
 - **Map editor:** sculpt hills, paint the ground, and place houses, towers, build pieces, cars, chests, loot llamas and named places. Sprites can only be earned, never placed.
