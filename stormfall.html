@@ -2252,46 +2252,6 @@ const weak={target:null,pos:new V3()};let weakSprite;
 function initWeak(){weakSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:canvasTex(128,g=>{g.strokeStyle='#8fe0ff';g.lineWidth=12;g.beginPath();g.arc(64,64,44,0,7);g.stroke();g.fillStyle='rgba(143,224,255,.45)';g.beginPath();g.arc(64,64,20,0,7);g.fill();},false),color:new THREE.Color(1.6,1.6,1.6),depthTest:false,transparent:true}));
   weakSprite.scale.set(.5,.5,1);weakSprite.visible=false;weakSprite.renderOrder=30;scene.add(weakSprite);}
 
-// ============================================================ EDITING
-function editWall(){
-
-  const p = player;
-
-  const dir = new V3(
-    -Math.sin(yaw)*Math.cos(pitch),
-    Math.sin(pitch),
-    -Math.cos(yaw)*Math.cos(pitch)
-  ).normalize();
-
-  const hit = castRay(
-    p.pos.clone().add(new V3(0,1.6,0)),
-    dir,
-    8,
-    p
-  );
-
-  if(!hit.ud || !hit.ud.piece) return;
-
-  const piece = hit.ud.piece;
-
-  if(piece.type !== 'wall') return;
-  if(piece.anchored) return;
-
-  piece.edit = (piece.edit || 0) + 1;
-
-  if(piece.edit > 2) piece.edit = 0;
-
-  if(piece.edit === 0){
-    piece.mesh.geometry = G_WALL[piece.a];
-  }
-  else if(piece.edit === 1){
-    piece.mesh.geometry = G_WALL_WIN[piece.a];
-  }
-  else{
-    piece.mesh.geometry = G_WALL_DOOR[piece.a];
-  }
-}
-
 // ============================================================ ENHANCEMENTS
 // time of day, decals, shockwaves, vehicles, supply drops, spectating, pings, mantling, sliding
 
@@ -3480,7 +3440,7 @@ addEventListener('keydown',e=>{
   if(keys[e.code])return;keys[e.code]=true;if(e.code==='Space')spaceEdge=true;if(e.code==='ControlLeft')ctrlEdge=true;
   if(e.code==='Escape'){if(locked&& document.exitPointerLock)document.exitPointerLock();else{paused=!paused;$('pause').classList.toggle('hidden',!paused);}return;}
   if(paused)return;
-  const p=player;if(!p||!p.alive)return;if(e.code==='KeyG')editWall();
+  const p=player;if(!p||!p.alive)return;
   if(e.code==='KeyU'){if(MODE.id==='hg'){centerMsg('','No shops in the arena. Sponsors may send you gifts.');return;}openShop();return;}if(e.code==='Tab'){openInv();return;}
   if(e.code==='KeyP'){SET.cam=(camMode()+1)%4;centerMsg('',CAM_NAMES[SET.cam]);PROFILE.set.cam=SET.cam;saveProfile();}
   if(e.code==='KeyL')SET.shoulder*=-1;
