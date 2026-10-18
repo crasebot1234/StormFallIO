@@ -696,6 +696,7 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
         <label for="arl">Auto reload<select id="arl"><option value="1" selected>On</option><option value="0">Off · press R to reload</option></select></label>
         <label for="setDiff">Bot difficulty<select id="setDiff"><option value="0.6">Recruit</option><option value="1" selected>Regular</option><option value="1.45">Veteran</option></select></label>
         <label for="tod">Time of day<select id="tod"><option value="dynamic" selected>Afternoon into sunset</option><option value="noon">Midday</option><option value="sunset">Golden hour</option></select></label>
+        <label for="inputMode">Controls<select id="inputMode"><option value="auto" selected>Auto detect</option><option value="kbm">Keyboard and mouse</option><option value="touch">Touch (phone or tablet)</option></select></label>
         <label for="vc">Voice chat<select id="vc"><option value="0" selected>Off</option><option value="1">On · bots speak, Enter to talk</option></select></label>
         <p class="settingsHint">Bot difficulty and time of day are chosen when a match starts. Voice chat uses your browser’s speech features when supported.</p>
       </div></section>
@@ -722,7 +723,7 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
         <dt>Enter</dt><dd>Chat. With Voice chat on, just speak after pressing Enter, then press Enter again to send</dd>
         <dt>Ammo</dt><dd>Each gun uses one ammo type. Walk over ammo boxes to collect. Every eliminated player drops ammo for their guns</dd>
         <dt>Tab · U</dt><dd>Inventory · gold shop (buy ammo, heals, weapons and upgrades)</dd>
-        <dt>Q / B · Z X C V</dt><dd>Build mode · wall, floor, ramp, roof · F edits a wall</dd>
+        <dt>Q / B · Z X C V</dt><dd>Build mode · wall, floor, ramp, roof · G edits a wall</dd>
         <dt>P · L</dt><dd>Cycle camera angle · swap shoulder</dd>
         <dt>T · Enter</dt><dd>Emote · chat (bots may answer)</dd>
         <dt>Vehicles</dt><dd>W/S throttle · A/D steer · Space handbrake · Shift boost · H horn</dd>
@@ -742,6 +743,12 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
   <div class="edRight" id="edOpts"></div>
   <div class="edHint"><b>Move view</b> tool or <b>middle-drag</b> (touch: drag · pinch to zoom · two fingers to turn): drag the map · <b>Right-drag</b> turn · <b>Wheel</b> zoom · <b>Left click</b> use tool · <b>[ ]</b> brush size · <b>R</b> rotate · <b>Ctrl+Z</b> undo · <b>WASD / Space / C</b> fly</div>
 </div>
+<div id="welcome" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle"><div class="welcomeWin pane">
+  <div class="welcomeHead"><p class="eyebrow" id="welcomeVer"></p><h2 id="welcomeTitle">Welcome to Stormfall</h2>
+    <div class="welcomeTabs"><button data-w="news" class="on">What's new</button><button data-w="howto">How to play</button></div></div>
+  <div class="welcomeBody" id="welcomeBody"></div>
+  <div class="welcomeFoot"><small>The full guide is always in the <b>How to Play</b> tab.</small><button class="btn" id="welcomeGo">Let's play</button></div>
+</div></div>
 <div id="modes" class="overlay hidden"><div class="shopwin pane">
   <div class="shophead"><h3>Choose a game mode</h3><button class="btn small ghost" id="modeClose">Back</button></div>
   <div id="modeGrid" class="modegrid"></div>
@@ -792,7 +799,7 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
 <script>if(!window.THREE)document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
 <script src="assets/js/GLTFLoader.js"></script>
 <script src="assets/js/SkeletonUtils.js"></script>
-<script>if(window.THREE&&!THREE.GLTFLoader){document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"><\/script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"><\/script>');}</script>
+<script>if(window.THREE&&!THREE.GLTFLoader)document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"><\/script>');if(window.THREE&&!THREE.SkeletonUtils)document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"><\/script>');</script>
 <script>
 /* Stormfall — realistic edition. Requires three.js r128 (global THREE). */
 'use strict';
@@ -834,8 +841,8 @@ const GUNS={
  shotgun:{name:'Pump Shotgun',short:'PUMP',dmg:9.5,rate:.85,mag:5,reload:4.4,ammo:'shells',spread:.075,ads:.06,bloom:0,maxBloom:0,range:45,auto:false,hs:1.75,pellets:10,fov:64,rar:[0,6],w:24,snd:'shotgun',score:60,speed:0,kick:.06},
  pistol:{name:'Pistol',short:'PISTOL',dmg:25,rate:6.5,mag:16,reload:1.5,ammo:'light',spread:.028,ads:.01,bloom:.012,maxBloom:.065,range:140,auto:false,hs:2,pellets:1,fov:62,rar:[0,6],w:12,snd:'pistol',score:25,speed:250,kick:.018},
  sniper:{name:'Bolt-Action Sniper',short:'SNIPER',dmg:105,rate:.38,mag:1,reload:2.6,ammo:'heavy',spread:.12,ads:0,bloom:0,maxBloom:0,range:700,auto:false,hs:2.5,pellets:1,fov:16,scope:true,rar:[2,6],w:7,snd:'sniper',score:42,speed:430,kick:.08},
- rocket:{name:'Rocket Launcher',short:'ROCKET',dmg:150,rate:.7,mag:1,reload:3,ammo:'rockets',spread:.008,ads:0,bloom:0,maxBloom:0,range:400,auto:false,hs:1,pellets:1,fov:60,projectile:true,rar:[1,6],w:4,snd:'rocket',score:50,speed:60,kick:.05},
-}
+ rocket:{name:'Rocket Launcher',short:'ROCKET',dmg:150,rate:.7,mag:1,reload:3,ammo:'rockets',spread:.008,ads:0,bloom:0,maxBloom:0,range:400,auto:false,hs:1,pellets:1,fov:60,projectile:true,rar:[1,6],w:4,snd:'rocket',score:50,speed:60,kick:.05}
+};
 const HEALS={
  bandage:{name:'Bandages',short:'BANDAGE',max:15,time:3.5,hp:15,cap:75,rar:0,give:5,col:'#efe9dc'},
  medkit:{name:'Med Kit',short:'MEDKIT',max:3,time:10,hp:100,cap:100,rar:1,give:1,col:'#e8463f'},
@@ -2245,6 +2252,46 @@ const weak={target:null,pos:new V3()};let weakSprite;
 function initWeak(){weakSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:canvasTex(128,g=>{g.strokeStyle='#8fe0ff';g.lineWidth=12;g.beginPath();g.arc(64,64,44,0,7);g.stroke();g.fillStyle='rgba(143,224,255,.45)';g.beginPath();g.arc(64,64,20,0,7);g.fill();},false),color:new THREE.Color(1.6,1.6,1.6),depthTest:false,transparent:true}));
   weakSprite.scale.set(.5,.5,1);weakSprite.visible=false;weakSprite.renderOrder=30;scene.add(weakSprite);}
 
+// ============================================================ EDITING
+function editWall(){
+
+  const p = player;
+
+  const dir = new V3(
+    -Math.sin(yaw)*Math.cos(pitch),
+    Math.sin(pitch),
+    -Math.cos(yaw)*Math.cos(pitch)
+  ).normalize();
+
+  const hit = castRay(
+    p.pos.clone().add(new V3(0,1.6,0)),
+    dir,
+    8,
+    p
+  );
+
+  if(!hit.ud || !hit.ud.piece) return;
+
+  const piece = hit.ud.piece;
+
+  if(piece.type !== 'wall') return;
+  if(piece.anchored) return;
+
+  piece.edit = (piece.edit || 0) + 1;
+
+  if(piece.edit > 2) piece.edit = 0;
+
+  if(piece.edit === 0){
+    piece.mesh.geometry = G_WALL[piece.a];
+  }
+  else if(piece.edit === 1){
+    piece.mesh.geometry = G_WALL_WIN[piece.a];
+  }
+  else{
+    piece.mesh.geometry = G_WALL_DOOR[piece.a];
+  }
+}
+
 // ============================================================ ENHANCEMENTS
 // time of day, decals, shockwaves, vehicles, supply drops, spectating, pings, mantling, sliding
 
@@ -3433,7 +3480,7 @@ addEventListener('keydown',e=>{
   if(keys[e.code])return;keys[e.code]=true;if(e.code==='Space')spaceEdge=true;if(e.code==='ControlLeft')ctrlEdge=true;
   if(e.code==='Escape'){if(locked&& document.exitPointerLock)document.exitPointerLock();else{paused=!paused;$('pause').classList.toggle('hidden',!paused);}return;}
   if(paused)return;
-  const p=player;if(!p||!p.alive)return;
+  const p=player;if(!p||!p.alive)return;if(e.code==='KeyG')editWall();
   if(e.code==='KeyU'){if(MODE.id==='hg'){centerMsg('','No shops in the arena. Sponsors may send you gifts.');return;}openShop();return;}if(e.code==='Tab'){openInv();return;}
   if(e.code==='KeyP'){SET.cam=(camMode()+1)%4;centerMsg('',CAM_NAMES[SET.cam]);PROFILE.set.cam=SET.cam;saveProfile();}
   if(e.code==='KeyL')SET.shoulder*=-1;
@@ -3771,9 +3818,13 @@ let toastT=null;function toast(msg){let el=document.querySelector('.toast');if(!
 
 // ---------- rigged character models ----------
 const MODELS={};let modelsReady=false;
+// copies of assets/ served from the GitHub repo: used when the local file can't be read
+// (e.g. stormfall.html opened by double-clicking it in Chrome or Edge, which block local model files)
+const ASSET_MIRRORS=['https://cdn.jsdelivr.net/gh/krishnasaigaruda/StormFallIO@main/assets/','https://raw.githubusercontent.com/krishnasaigaruda/StormFallIO/main/assets/'];
+const assetURLs=p=>['assets/'+p,...ASSET_MIRRORS.map(m=>m+p)];
 function loadModels(){return new Promise(res=>{if(!THREE.GLTFLoader||!THREE.SkeletonUtils){modelsReady=true;res();return;}const list=[['xbot','Xbot.glb'],['soldier','Soldier.glb'],['michelle','Michelle.glb'],['rpm','readyplayer.me.glb'],...CHAR_MODELS.map(c=>['c_'+c.id,'chars/'+c.id+'.glb'])];let left=list.length;
   const done=()=>{if(--left<=0&&!modelsReady){modelsReady=true;res();}};
-  for(const [k,f] of list){const urls=f.startsWith('chars/')?['assets/models/'+f]:['assets/models/'+f,'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/'+f];
+  for(const [k,f] of list){const urls=f.startsWith('chars/')?assetURLs('models/'+f):[...assetURLs('models/'+f),'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/'+f];
     const fbx=/\.fbx$/.test(f);if(fbx&& !THREE.FBXLoader){done();continue;}
     const tryUrl=i=>{if(i>=urls.length){done();return;}(fbx?new THREE.FBXLoader():new THREE.GLTFLoader()).load(urls[i],g=>{try{MODELS[k]=prepModel(fbx?g:g.scene);}catch(e){console.warn(e);}done();},undefined,()=>tryUrl(i+1));};tryUrl(fbx?0:0);}
   // avatars the player imported in the Locker
@@ -3911,7 +3962,8 @@ function musicMode(){if(gameState==='menu')return 'lobby';if(gameState!=='play'|
 const MIX={lobby:{pad:.5,bass:.5,arp:.32,drum:.5,lead:.22},drop:{pad:.4,bass:.6,arp:.38,drum:.65,lead:.28},explore:{pad:.42,bass:.12,arp:.14,drum:0,lead:0},fight:{pad:.3,bass:.6,arp:.25,drum:.7,lead:0},end:{pad:.35,bass:0,arp:.1,drum:0,lead:0}};
 // real recorded tracks (assets/music) crossfade by mode; the synth layers only play if the files can't load
 const TRACKS={lobby:'lobby.mp3',drop:'drop.mp3',explore:'explore.mp3',fight:'fight.mp3'};const TR={};let tracksOK=false;
-function initTracks(){for(const k in TRACKS){const a=new Audio('assets/music/'+TRACKS[k]);a.loop=true;a.preload='auto';a.volume=0;a.addEventListener('canplay',()=>{tracksOK=true;},{once:true});TR[k]=a;}}
+function initTracks(){for(const k in TRACKS){const urls=assetURLs('music/'+TRACKS[k]);urls.splice(1,0,urls.pop());/* local, then GitHub raw (fast for big files), then jsdelivr */
+    const a=new Audio(urls[0]);let i=0;a.addEventListener('error',()=>{if(++i<urls.length){a.src=urls[i];a.load();}});a.loop=true;a.preload='auto';a.volume=0;a.addEventListener('canplay',()=>{tracksOK=true;},{once:true});TR[k]=a;}}
 function tracksTick(dt){const m=musicMode();for(const k in TR){const a=TR[k];const want=(k===m||(m==='end'&& k==='explore'))?MUSIC.vol*(k==='explore'?.55:.5):0;
     a.volume=clamp(a.volume+(want-a.volume)*Math.min(1,dt*1.2),0,1);if(want>0&& a.paused){a.play().catch(()=>{});}if(want===0&& a.volume<.01&& !a.paused)a.pause();}}
 let lastTT=0;
@@ -3975,7 +4027,6 @@ function renderCredits(){const row=(w,a,l,u)=>`<div><b>${w}</b><span>${a}</span>
     +'<h4>Music</h4>'+['Exhilarate','Volatile Reaction','Sneaky Adventure','Hitman'].map(t=>row(t,'Kevin MacLeod (incompetech.com)','CC BY 4.0','https://incompetech.com')).join('')
     +'<h4>Code and fonts</h4>'+row('three.js','three.js authors','MIT','https://threejs.org')+row('Barlow / Barlow Condensed','Jeremy Tribby','SIL Open Font License','https://fonts.google.com/specimen/Barlow')
     +'<h4>Game</h4>'+row('Stormfall','Built with Claude','Everything else is procedural (generated in code)','');}
-function showTab(t){if(t==='credits')renderCredits();menuTab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('#menu .tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+t));
 function showTab(t){if(t==='credits')renderCredits();if(t==='events')renderEvents();if(t==='howto')renderHowto();menuTab=t;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('#menu .tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+t));
   if(t==='maps')renderMyMaps();if(t==='sprites')renderSprites();if(t==='locker')renderLocker();if(t==='shop')renderItemShop();if(t==='pass')renderPass();if(t==='career')renderCareer();renderWallet();sfx('ui');}
 function saveSnapshotObj(){const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&& k.startsWith('stormfall.'))o[k]=localStorage.getItem(k);}return o;}
@@ -4005,7 +4056,7 @@ function initMenuUI(){loadPets();initSaveUI();
   const menu=$('menu');menu.addEventListener('pointerdown',e=>{if(e.target.closest('.pane,.modecard,button,.topbar'))return;LOBBY.drag=e.clientX;});
   addEventListener('pointermove',e=>{if(LOBBY.drag==null)return;LOBBY.rot+=(e.clientX-LOBBY.drag)*.012;LOBBY.drag=e.clientX;});addEventListener('pointerup',()=>{LOBBY.drag=null;});
   // settings persist between sessions
-  const st=PROFILE.set,settingIds=['qual','aa','sens','fov','cam','tod','diff','arl','vc','renderScale','shadows','bloom','sfx','mus'];
+  const st=PROFILE.set,settingIds=['qual','aa','sens','fov','cam','tod','diff','arl','vc','renderScale','shadows','bloom','sfx','mus','inputMode'];
   for(const id of settingIds)if(st[id]!=null&& $(id))$(id).value=st[id];
   $('setDiff').value=$('diff').value;
   SET.renderScale=clamp(+(st.renderScale??1),.6,1.2);SET.shadows=st.shadows==null||String(st.shadows)!=='0';SET.bloom=st.bloom==null||String(st.bloom)!=='0';SET.sfx=clamp(+(st.sfx??.75),0,1);
@@ -4019,6 +4070,7 @@ function initMenuUI(){loadPets();initSaveUI();
     if(id==='fov')$('fovVal').textContent=value;
     if(id==='mus'){$('musVal').textContent=Math.round(+value*100)+'%';setMusicVol(+value);}
     if(id==='vc'&&!VC.on())VC.stop();
+    if(id==='inputMode'&& value!==TOUCH.pref){TOUCH.pref=value;toast('Switching controls…');setTimeout(()=>location.reload(),500);}
     if(id==='sfx'){SET.sfx=+value;setSfxVol(value);$('sfxVal').textContent=Math.round(+value*100)+'%';$('pSfx').value=value;}
     if(id==='renderScale'){SET.renderScale=clamp(+value,.6,1.2);$('renderScaleVal').textContent=Math.round(SET.renderScale*100)+'%';$('pRenderScale').value=value;applySize();}
     if(id==='shadows'){SET.shadows=value!=='0';$('pShadows').value=value;applyQuality();}
@@ -4032,7 +4084,7 @@ function initMenuUI(){loadPets();initSaveUI();
     if(id==='mus')$('pMus').value=value;
     if(id==='vc')$('pVc').value=value;
   });
-  $('settingsReset').onclick=()=>{const defaults={qual:'auto',aa:'1',sens:'1',fov:'80',cam:'0',tod:'dynamic',diff:'1',arl:'1',vc:'0',renderScale:'1',shadows:'1',bloom:'1',sfx:'.75',mus:'.6'};
+  $('settingsReset').onclick=()=>{const defaults={inputMode:TOUCH.pref,qual:'auto',aa:'1',sens:'1',fov:'80',cam:'0',tod:'dynamic',diff:'1',arl:'1',vc:'0',renderScale:'1',shadows:'1',bloom:'1',sfx:'.75',mus:'.6'};
     for(const [key,value] of Object.entries(defaults)){PROFILE.set[key]=value;const control=$(key==='diff'?'diff':key);if(control)control.value=value;}
     $('setDiff').value='1';for(const id of [...settingIds,'setDiff'])$(id).dispatchEvent(new Event('input',{bubbles:true}));toast('Settings restored to defaults');};
   AQ.on=$('qual').value==='auto';SET.quality=AQ.on?(TOUCH.on?'low':'high'):$('qual').value;SET.sens=+$('sens').value;SET.fov=+$('fov').value;SET.aa=+$('aa').value;SET.cam=+$('cam').value;SET.autoReload=$('arl').value!=='0';
@@ -4202,10 +4254,15 @@ for(const s of SIDEKICKS)SIDEKICK_BY[s.id]=s;
 COS.sidekick={list:SIDEKICKS,by:SIDEKICK_BY,label:'Sidekicks'};
 for(const k in COS)for(const it of COS[k].list)if(it.price>0)it.price*=2;
 const PETS={},PET_FACE=Math.PI;let petsLoading=false;
-function loadPets(){if(petsLoading||!THREE.GLTFLoader)return;petsLoading=true;const L=new THREE.GLTFLoader();
-  for(const f of [...new Set(SIDEKICKS.filter(s=>s.file).map(s=>s.file))])L.load('assets/models/pets/'+f+'.glb',g=>{PETS[f]=g;
+// sidekick models load in the background; a failed download (slow or flaky connection) is retried instead of leaving that pet missing
+const PET_LOADING=new Set();
+function loadPetFile(f,tries){if(PETS[f]||PET_LOADING.has(f)||!THREE.GLTFLoader)return;PET_LOADING.add(f);
+  // the local file first, then the GitHub mirrors in turn (works even when the page was opened as a file)
+  const urls=assetURLs('models/pets/'+f+'.glb');new THREE.GLTFLoader().load(urls[tries%urls.length],g=>{PET_LOADING.delete(f);PETS[f]=g;
     for(const k in THUMB.cache)if(k.startsWith('sidekick|'))delete THUMB.cache[k];
-    if(menuTab==='locker'&& lockCat==='sidekick')renderLocker();if(menuTab==='shop')renderItemShop();if(LOBBY.grp&& !LOBBY.pet)spawnLobbyPet();},undefined,()=>{});}
+    if(menuTab==='locker'&& lockCat==='sidekick')renderLocker();if(menuTab==='shop')renderItemShop();if(LOBBY.grp&& !LOBBY.pet)spawnLobbyPet();},undefined,
+    err=>{PET_LOADING.delete(f);console.warn('Sidekick model failed to load:',f,err);if(tries<5)setTimeout(()=>loadPetFile(f,tries+1),tries?1500*tries:0);});}
+function loadPets(){petsLoading=true;for(const f of [...new Set(SIDEKICKS.filter(s=>s.file).map(s=>s.file))])loadPetFile(f,0);}
 function makePet(id){const d=SIDEKICK_BY[id];if(!d||!d.file)return null;const g=PETS[d.file];if(!g||!THREE.SkeletonUtils)return null;
   const root=THREE.SkeletonUtils.clone(g.scene);root.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(root);const s=d.h/Math.max(.001,b.max.y-b.min.y);root.scale.multiplyScalar(s);
   root.updateMatrixWorld(true);const b2=new THREE.Box3().setFromObject(root);root.position.y-=b2.min.y;root.rotation.y=PET_FACE;
@@ -4225,7 +4282,7 @@ function attachPet(pt,owner){pt.owner=owner;pt.maxHp=PET_HP[pt.def.rar]||80;pt.h
   scene.add(pt.wrap);pt.wrap.visible=false;SK.pets.push(pt);return pt;}
 function removePet(pt){scene.remove(pt.wrap);arrRemove(hittables,pt.hb);arrRemove(charHB,pt.hb);arrRemove(SK.pets,pt);if(SK.pet===pt)SK.pet=null;}
 const PETS_ALLOWED=()=>['br','nobuild','custom'].includes(MODE.id);
-function initSidekick(){for(const pt of SK.pets.slice())removePet(pt);SK.pet=null;for(const c of chars)c.petId=null;if(!PETS_ALLOWED())return;
+function initSidekick(){for(const pt of SK.pets.slice())removePet(pt);SK.pet=null;for(const c of chars)c.petId=null;if(!PETS_ALLOWED())return;loadPets();
   if(PROFILE.eq.sidekick!=='none'){const pt=makePet(PROFILE.eq.sidekick);if(pt){attachPet(pt,player);SK.pet=pt;}return;}
   // only one sidekick per match: if you have none, one random enemy brings one (weak ones are more common)
   const pool=[['cat',5],['shiba',5],['fox',3],['husky',3],['birb',2],['wolf',2],['dragon',1]];const tot=pool.reduce((a,x)=>a+x[1],0);
@@ -5060,7 +5117,17 @@ function initChatBar(){const box=$('chatIn');box.addEventListener('keydown',e=>{
   box.addEventListener('blur',()=>{box.classList.remove('active');if(uiOpen==='chat')uiOpen=null;});}
 // ============================================================ PHONES & TABLETS: on-screen joystick, look-drag and buttons
 // Buttons send the same key presses the keyboard does, so every action (E, R, building, map, pause, the plane jump) works unchanged.
-const TOUCH={on:/[?&]touch=1/.test(location.search)||(matchMedia('(pointer:coarse)').matches&& !matchMedia('(pointer:fine)').matches)||/iPhone|iPad|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&& navigator.maxTouchPoints>1),mx:0,mz:0,stick:null,look:null};
+// touch controls: phones and tablets only. Touchscreen laptops (common on Windows) report a touch "primary pointer",
+// so a computer with any mouse or trackpad stays on keyboard and mouse. Settings > Controls can force either.
+const TOUCH=(()=>{let pref='auto';try{pref=(JSON.parse(localStorage.getItem('stormfall.profile.v2')||'{}').set||{}).inputMode||'auto';}catch(e){}
+  const q=location.search,ua=navigator.userAgent,mm=x=>matchMedia(x).matches;
+  const mobileOS=/iPhone|iPad|iPod|Android/i.test(ua)||(navigator.platform==='MacIntel'&& navigator.maxTouchPoints>1);
+  const desktopOS=/Windows NT|CrOS|X11|Linux x86_64/i.test(ua)&& !/Android/i.test(ua);
+  const mouse=mm('(any-pointer:fine)')||mm('(any-hover:hover)');
+  const auto=mobileOS||(!desktopOS&& mm('(pointer:coarse)')&& !mouse)||(desktopOS&& !mouse&& navigator.maxTouchPoints>0);
+  let sawMouse=false;try{sawMouse=sessionStorage.getItem('stormfall.sawMouse')==='1';}catch(e){}
+  const on=/[?&]touch=1/.test(q)?true:/[?&]touch=0/.test(q)?false:pref==='touch'?true:pref==='kbm'?false:auto&& !sawMouse;
+  return {on,pref,auto,mx:0,mz:0,stick:null,look:null};})();
 function tKey(code,down){dispatchEvent(new KeyboardEvent(down?'keydown':'keyup',{code,bubbles:true}));if(!down)keys[code]=false;}
 addEventListener('click',e=>{const a=e.target.closest&& e.target.closest('a.sampleLink');if(a&& TOUCH.on){e.preventDefault();toast('This version is not made for phones or tablets. Play it on a computer.');}},true);
 const EDT={pts:new Map(),mode:null,moved:0,last:null};
@@ -5081,6 +5148,9 @@ function edTouch(e,ph){if(e.target.closest&& e.target.closest('.edSide,.edRight,
   if(ph==='end'&& pts.length===0){if(EDT.mode==='one'){if(ED.down){ED.down=false;if(ED.stroke){edPush(ED.stroke);ED.stroke=null;}if(ED.sb){const b=ED.sb;ED.sb=null;cmRefresh(b.x0,b.z0,b.x1,b.z1,true);}}
       else if(ED.tool!=='hand'&& !TERRAIN_TOOLS.includes(ED.tool)&& EDT.moved<12){edUpdateHit();edPlace();}}EDT.mode=null;}}
 function initTouch(){if(!TOUCH.on)return;document.body.classList.add('touch');freeLook=true;
+  // auto-detected touch, but a real mouse moved in the lobby: this is a computer, switch to keyboard and mouse
+  if(TOUCH.pref==='auto'&& !/[?&]touch=1/.test(location.search)){let travel=0;const onMove=e=>{if(e.pointerType!=='mouse'||!e.isTrusted||gameState!=='menu')return;travel+=Math.abs(e.movementX||0)+Math.abs(e.movementY||0);
+      if(travel>40){removeEventListener('pointermove',onMove);try{sessionStorage.setItem('stormfall.sawMouse','1');}catch(err){}toast('Mouse detected: switching to keyboard and mouse controls');setTimeout(()=>location.reload(),600);}};addEventListener('pointermove',onMove);}
   const ui=$('touchUI');ui.classList.remove('hidden');
   const B=(id,label,cls)=>`<button class="tb ${cls||''}" data-b="${id}">${label}</button>`;
   ui.innerHTML=`<div id="tStick"><div id="tKnob"></div></div>
@@ -5145,12 +5215,6 @@ function boot(){
   const steps=[[restarting?'Starting '+MODE.name+'…':'Generating island…',()=>{applySize();buildEnv();buildWorld();}],['Placing loot and vehicles…',()=>{initParticles();initWeak();buildStorm();initExtras();}],['Building towns…',()=>{initRealism();initTrail();addEventListener('resize',()=>applySize());}]];
   let i=0;const next=()=>{if(i<steps.length){const [txt,fn]=steps[i];setLoad((i+.3)/(steps.length+1),txt);setTimeout(()=>{try{fn();}catch(err){console.error(err);sfError(err.message);return;}i++;next();},30);return;}
     setLoad(steps.length/(steps.length+1),'Loading characters…');requestAnimationFrame(loop);
-    loadModels().then(()=>{try{buildLobby();}catch(err){console.error(err);}initMenuUI();initShopUI();initPauseUI();initModeUI();setLoad(1,'Ready');
-      setTimeout(()=>{$('loading').classList.add('hidden');$('splash').style.opacity=0;setTimeout(()=>$('splash').classList.add('hidden'),800);$('play').disabled=false;
-        let auto=false;try{auto=sessionStorage.getItem('stormfall.autoplay')==='1';sessionStorage.removeItem('stormfall.autoplay');}catch(err){}if(auto)toast('Press PLAY to drop in again');},250);});};
-  next();}
-setTimeout(()=>{try{boot();}catch(err){console.error(err);sfError(err.message);}},60);
-if(!window.__SF)Object.defineProperty(window,'__SF',{value:{get player(){return player},chars,pieces,storm,ship,step:d=>step(d),keys,setLook:(y,p)=>{yaw=y;pitch=p;},mouse:(l,r)=>{mouseL=l;mouseLPressed=l;mouseR=r;},get state(){return gameState},render:()=>renderFrame(),scene,renderer,camera,post,Q:()=>Q,terrainH,grass:()=>grassMesh,vehicles,drops,TOD,doors,glassList,harvs,spawnDrop:()=>spawnDrop(),HZ,HG:()=>HG,chests,openChest,hzWall,hzSwarm,MODE:()=>MODE,get gameTime(){return gameTime},addPiece,pieceBox,SK,spritesW,giveSprite,PROFILE,ED,CM:()=>CM,editorUpdate,edPlace,edSave,edUndo,damageChar:(c,d,att,w)=>damageChar(c,d,att||null,w||"Test",false,null,true),setCam:f=>{camOverride=f;},hm:()=>heightTex,bullets,grenades,lobby:LOBBY,models:MODELS,SET,AA,rockets,fireGun:(c,o,d)=>fireGun(c,o,d,0,true),chests,pickups,openChest,spawnPickup:(it,x,y,z)=>spawnPickup(it,x,y,z,false)}});
     loadModels().then(()=>{try{buildLobby();}catch(err){console.error(err);}initMenuUI();initShopUI();initPauseUI();initModeUI();initHowtoUI();try{renderEvBanner();}catch(err){console.error(err);}setLoad(1,'Ready');
       setTimeout(()=>{$('loading').classList.add('hidden');$('splash').style.opacity=0;setTimeout(()=>$('splash').classList.add('hidden'),800);$('play').disabled=false;setTimeout(maybeWelcome,500);
         let auto=false;try{auto=sessionStorage.getItem('stormfall.autoplay')==='1';sessionStorage.removeItem('stormfall.autoplay');}catch(err){}if(auto)toast('Press PLAY to drop in again');},250);});};
