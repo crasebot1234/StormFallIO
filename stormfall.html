@@ -272,10 +272,11 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
 /* ---------- lobby ---------- */
 .overlay{position:fixed;inset:0;display:flex;padding:16px;overflow:auto}
 #menu{flex-direction:column;padding:0;overflow:hidden;background:linear-gradient(90deg,rgba(6,14,32,.86) 0%,rgba(6,14,32,.35) 38%,rgba(6,14,32,0) 60%),linear-gradient(0deg,rgba(4,10,24,.75),transparent 30%)}
-.topbar{display:flex;align-items:center;gap:22px;padding:12px 22px;background:linear-gradient(180deg,rgba(6,16,40,.9),rgba(6,16,40,.55));border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+.topbar{display:flex;align-items:center;gap:clamp(10px,1.4vw,22px);padding:12px 22px;background:linear-gradient(180deg,rgba(6,16,40,.9),rgba(6,16,40,.55));border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
 .brand{font:900 italic 30px var(--display);letter-spacing:.04em;background:linear-gradient(180deg,#fff,#ffd65a);-webkit-background-clip:text;background-clip:text;color:transparent}
-#tabs{display:flex;gap:4px;flex-wrap:wrap}
-#tabs button{font:800 18px var(--display);letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:#b9c6d6;padding:8px 14px;border-radius:4px;cursor:pointer;position:relative}
+#tabs{display:flex;gap:2px;flex-wrap:wrap}
+@media (min-width:900px){.topbar{flex-wrap:nowrap}#tabs{flex-wrap:nowrap;flex:1;min-width:0}.brand,.wallet{flex:none}}
+#tabs button{font:800 clamp(14px,1.15vw,18px) var(--display);letter-spacing:.07em;text-transform:uppercase;background:none;border:0;color:#b9c6d6;padding:8px clamp(7px,.75vw,14px);white-space:nowrap;border-radius:4px;cursor:pointer;position:relative}
 #tabs button:hover{color:#fff;background:rgba(255,255,255,.06)}
 #tabs button.on{color:#fff}
 #tabs button.on::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;background:var(--gold);border-radius:2px}
@@ -2253,44 +2254,18 @@ function initWeak(){weakSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:ca
   weakSprite.scale.set(.5,.5,1);weakSprite.visible=false;weakSprite.renderOrder=30;scene.add(weakSprite);}
 
 // ============================================================ EDITING
-function editWall(){
-
-  const p = player;
-
-  const dir = new V3(
-    -Math.sin(yaw)*Math.cos(pitch),
-    Math.sin(pitch),
-    -Math.cos(yaw)*Math.cos(pitch)
-  ).normalize();
-
-  const hit = castRay(
-    p.pos.clone().add(new V3(0,1.6,0)),
-    dir,
-    8,
-    p
-  );
-
-  if(!hit.ud || !hit.ud.piece) return;
-
-  const piece = hit.ud.piece;
-
-  if(piece.type !== 'wall') return;
-  if(piece.anchored) return;
-
-  piece.edit = (piece.edit || 0) + 1;
-
-  if(piece.edit > 2) piece.edit = 0;
-
-  if(piece.edit === 0){
-    piece.mesh.geometry = G_WALL[piece.a];
-  }
-  else if(piece.edit === 1){
-    piece.mesh.geometry = G_WALL_WIN[piece.a];
-  }
-  else{
-    piece.mesh.geometry = G_WALL_DOOR[piece.a];
-  }
-}
+// G edits the wall you are looking at (one you built): plain wall, then a window, then a doorway you can walk through
+function editWall(){const p=player;if(!p||p.state!=='ground'||!MODE.build)return;
+  const o=camera.position.clone(),dir=new V3();camera.getWorldDirection(dir);const reach=o.distanceTo(p.eye())+6;
+  // walk along the aim and take the first piece whose box it enters (so the hole in a window or doorway still counts)
+  let pc=null;const q=new V3();const hit=castRay(o,dir,reach,p);const lim=hit.ud?Math.min(reach,hit.dist+.3):reach;
+  for(let t=0;t<=lim&& !pc;t+=.2){q.copy(o).addScaledVector(dir,t);const s=columns.get(ckey(Math.floor(q.x/T),Math.floor(q.z/T)));if(!s)continue;
+    for(const k of s){const b=k.box;if(q.x>=b.minx-.12&& q.x<=b.maxx+.12&& q.y>=b.miny&& q.y<=b.maxy&& q.z>=b.minz-.12&& q.z<=b.maxz+.12){pc=k;break;}}}
+  if(!pc)return;
+  if(pc.type!=='wall'){centerMsg('','Only walls can be edited');return;}if(pc.anchored){centerMsg('','You can only edit walls you build');return;}
+  pc.edit=((pc.edit||0)+1)%3;pc.win=pc.edit===1;pc.door=pc.edit===2;
+  pc.mesh.geometry=pc.edit===0?G_WALL[pc.a]:pc.edit===1?G_WALL_WIN[pc.a]:G_WALL_DOOR[pc.a];
+  sfxAt('build',q.x,q.y,q.z);centerMsg('',['Wall','Window','Doorway'][pc.edit]);}
 
 // ============================================================ ENHANCEMENTS
 // time of day, decals, shockwaves, vehicles, supply drops, spectating, pings, mantling, sliding
