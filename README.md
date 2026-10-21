@@ -83,8 +83,9 @@ Hold the device sideways. Touchscreen laptops (common on Windows) stay on keyboa
 | E | Open chests and doors, pick up, drive |
 | R | Reload |
 | H | Drop the selected item |
-| Q / B · Z X C V | Build mode · wall, floor, ramp, roof |
-| G | Edit a wall |
+| Q | Toggle build mode on or off |
+| Z X C V | Select wall, floor, ramp, roof |
+| G | Edit a wall you built |
 | P | Change camera (third person, close, first person, cinematic) |
 | M | Full map |
 | Tab | Inventory |
@@ -93,10 +94,13 @@ Hold the device sideways. Touchscreen laptops (common on Windows) stay on keyboa
 | Enter | Chat (with Voice chat on: speak, then press Enter to send) |
 | Esc | Pause menu |
 
+Open **Settings → Controls** to rebind match actions—including shoot, aim, interact, build, wall edit/confirm, chat and pause—and map-editor shortcuts. Each action has three bind slots; click any slot to assign a keyboard key, mouse button, or wheel direction, and use × to clear that slot. The same key can be assigned to multiple actions. Bindings are saved in this browser. To edit a wall you built, look at it and press your **Edit / confirm wall** bind (G by default); the 3×3 grid appears directly on the wall with no blocking edit panel, and the cursor stays captured in the game window while you edit. Click a tile with your crosshair to select it, or hold the click and sweep your crosshair across cells; sweep back across selected cells to erase them. Center makes a window, center plus bottom-center makes a door, and presets include wide/double windows, an arch, half wall, corner opening and diagonal. Other cell combinations create custom openings. Clear the selection to reset the wall. Use the same **Edit / confirm wall** bind to confirm manually, or Esc to cancel. **Settings → Gameplay → Auto confirm edits** can be Off, Edit, Reset, or Both; Edit confirms a non-empty selection on release, while Reset confirms after the selection is cleared. In the map editor, the default keys are WASD to fly, Shift to move faster, Space/C to fly up/down, R to rotate placement, [ / ] to change brush size, Z to undo, and K to save. Left click places or paints, right click looks around, and middle click (or the Hand tool) pans.
+
 ## Features
 
 - **Weapons:** seven rarities (Common to Mythic and Exotic), ballistic bullets, aim assist (Off, Low, Medium, or High, where your bullets curve onto targets) and a sniper scope. Exotic rocket launchers lock on.
 - **Bots:** they loot chests, llamas and supply drops, swap for better gear, heal, build cover, drive cars and chat (with optional voice).
+- **Ranked queue:** available in Battle Royale and No Build. Rank details appear when Ranked queue is enabled; bot difficulty is locked to Regular for Ranked matches.
 - **Sidekicks:** 100 pets that follow you and fight in short bursts. Seven can be bought; the rest hatch from Easter eggs. One per match, in Battle Royale and No Build only.
 - **Sprites:** ultra-rare elemental creatures (Air, Water, Fire, Earth) that give you a power for the match. Track the ones you've found in the Sprites tab.
 - **Shop and progress:** an Item Shop, Locker, Battle Pass, Career stats and Storm Bucks (150 for each win).
