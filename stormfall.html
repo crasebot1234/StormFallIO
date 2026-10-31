@@ -123,6 +123,9 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
 #lockMark{position:absolute;left:0;top:0;width:34px;height:34px;border:2px dashed rgba(255,80,60,.85);display:none;pointer-events:none;box-shadow:0 0 8px rgba(255,60,40,.5)}
 #lockMark.locked{border:3px solid #ff3b2f;box-shadow:0 0 14px rgba(255,40,30,.9);animation:lockp .5s infinite alternate}
 @keyframes lockp{to{border-color:#ffd23f}}
+#buyConfirm{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}#buyConfirm.on{display:flex}#buyConfirm .bcWin{min-width:320px;text-align:center;padding:22px 26px}#buyConfirm h3{margin:0 0 8px}#buyConfirm p{margin:0 0 18px}#buyConfirm .bcBtns{display:flex;gap:10px;justify-content:center}
+#editHint{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);display:none;gap:8px;align-items:center;z-index:6;pointer-events:none;font:700 15px var(--body)}#editHint.on{display:flex}
+#editHint>*{background:rgba(10,14,20,.78);border:1px solid var(--line);border-radius:6px;padding:5px 11px;color:#fff}#editHint b{background:#ffad32;color:#1a1000;font:900 italic 16px var(--display)}#editHint kbd{background:#fff;color:#111;border-radius:3px;padding:0 6px;margin-right:4px;font:800 12px sans-serif}
 #editor{position:fixed;inset:0;pointer-events:none;font-family:var(--body);z-index:5}
 #editor .edTop,#editor .edSide,#editor .edRight,#editor .edHint{pointer-events:auto;background:rgba(10,14,20,.82);border:1px solid var(--line);border-radius:8px;backdrop-filter:blur(6px)}
 .edTop{position:absolute;left:12px;right:12px;top:10px;display:flex;align-items:center;gap:10px;padding:8px 12px}
@@ -272,10 +275,11 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
 /* ---------- lobby ---------- */
 .overlay{position:fixed;inset:0;display:flex;padding:16px;overflow:auto}
 #menu{flex-direction:column;padding:0;overflow:hidden;background:linear-gradient(90deg,rgba(6,14,32,.86) 0%,rgba(6,14,32,.35) 38%,rgba(6,14,32,0) 60%),linear-gradient(0deg,rgba(4,10,24,.75),transparent 30%)}
-.topbar{display:flex;align-items:center;gap:22px;padding:12px 22px;background:linear-gradient(180deg,rgba(6,16,40,.9),rgba(6,16,40,.55));border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+.topbar{display:flex;align-items:center;gap:clamp(10px,1.4vw,22px);padding:12px 22px;background:linear-gradient(180deg,rgba(6,16,40,.9),rgba(6,16,40,.55));border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
 .brand{font:900 italic 30px var(--display);letter-spacing:.04em;background:linear-gradient(180deg,#fff,#ffd65a);-webkit-background-clip:text;background-clip:text;color:transparent}
-#tabs{display:flex;gap:4px;flex-wrap:wrap}
-#tabs button{font:800 18px var(--display);letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:#b9c6d6;padding:8px 14px;border-radius:4px;cursor:pointer;position:relative}
+#tabs{display:flex;gap:2px;flex-wrap:wrap}
+@media (min-width:900px){.topbar{flex-wrap:nowrap}#tabs{flex-wrap:nowrap;flex:1;min-width:0}.brand,.wallet{flex:none}}
+#tabs button{font:800 clamp(14px,1.15vw,18px) var(--display);letter-spacing:.07em;text-transform:uppercase;background:none;border:0;color:#b9c6d6;padding:8px clamp(7px,.75vw,14px);white-space:nowrap;border-radius:4px;cursor:pointer;position:relative}
 #tabs button:hover{color:#fff;background:rgba(255,255,255,.06)}
 #tabs button.on{color:#fff}
 #tabs button.on::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;background:var(--gold);border-radius:2px}
@@ -679,7 +683,7 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
     <button class="btn" id="mapNew">Create new map</button><div id="mapsList" class="mapsList"></div></div></section>
   <section id="tab-events" class="tab"><div class="pane" style="max-width:1040px;width:100%;align-self:flex-start"><h3>Events <small>A new 3-day event every month. Day 2 is the main event</small></h3><div id="eventsBody"></div></div></section>
   <section id="tab-howto" class="tab"><div class="pane" style="max-width:980px;width:100%;align-self:flex-start"><h3>How to Play <small>everything you need to win</small></h3><div id="howtoBody"></div>
-    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn small ghost" id="howtoNews">What's new in 1.2</button></div></div></section>
+    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn small ghost" id="howtoNews">What's new in 1.3</button></div></div></section>
   <section id="tab-credits" class="tab"><div class="pane" style="max-width:820px;width:100%;align-self:flex-start"><h3>Credits <small>Thank you to these creators</small></h3><div id="creditsList" class="credits"></div></div></section>
   <section id="tab-settings" class="tab"><div class="pane settingsPane" style="width:100%;align-self:flex-start">
     <h3>Settings <small>Customize your Stormfall experience</small></h3>
@@ -706,12 +710,15 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
       </div></section>
       <section class="settingsGroup"><h4>Gameplay</h4><div class="opts">
         <label for="arl">Auto reload<select id="arl"><option value="1" selected>On</option><option value="0">Off · press R to reload</option></select></label>
+        <label for="editAfterBuild">Open edit after building<select id="editAfterBuild"><option value="1" selected>On</option><option value="0">Off</option></select></label>
         <label for="autoConfirmEdit">Auto confirm edits<select id="autoConfirmEdit"><option value="off" selected>Off</option><option value="edit">Edit</option><option value="reset">Reset</option><option value="both">Both</option></select></label>
+        <label for="turboBuild">Turbo Build<select id="turboBuild"><option value="1" selected>On</option><option value="0">Off</option></select></label>
+        <label for="editTooltip">Edit tooltip<select id="editTooltip"><option value="1" selected>On</option><option value="0">Off</option></select></label>
         <label for="setDiff">Bot difficulty<select id="setDiff"><option value="0.6">Recruit</option><option value="1" selected>Regular</option><option value="1.45">Veteran</option></select></label>
         <label for="tod">Time of day<select id="tod"><option value="dynamic" selected>Afternoon into sunset</option><option value="noon">Midday</option><option value="sunset">Golden hour</option></select></label>
         <label for="inputMode">Controls<select id="inputMode"><option value="auto" selected>Auto detect</option><option value="kbm">Keyboard and mouse</option><option value="touch">Touch (phone or tablet)</option></select></label>
         <label for="vc">Voice chat<select id="vc"><option value="0" selected>Off</option><option value="1">On · bots speak, Enter to talk</option></select></label>
-        <p class="settingsHint">Auto confirm Edit confirms a non-empty wall edit when you release the selection; Reset confirms once all selected cells are cleared. Bot difficulty and time of day are chosen when a match starts. Voice chat uses your browser’s speech features when supported.</p>
+        <p class="settingsHint">Turbo Build repeatedly attempts to place the selected build while you hold the build button; turn it off to place once per press and allow Open edit after building to open immediately. Auto confirm Edit confirms a non-empty wall edit when you release the selection; Reset confirms once all selected cells are cleared. Edit tooltip shows or hides build-edit controls. Bot difficulty and time of day are chosen when a match starts. Voice chat uses your browser’s speech features when supported.</p>
       </div></section>
     </div>
     <section class="settingsGroup"><h4>Controls</h4>
@@ -793,7 +800,10 @@ body.touch #tabs{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}body.touc
       <label>Music volume<input id="pMus" type="range" min="0" max="1" step="0.05" value="0.6"></label>
       <label>Sound effects<input id="pSfx" type="range" min="0" max="1" step="0.05" value="0.75"></label>
       <label>Auto reload<select id="pArl"><option value="1">On</option><option value="0">Off</option></select></label>
+      <label>Open edit after building<select id="pEditAfterBuild"><option value="1">On</option><option value="0">Off</option></select></label>
       <label>Auto confirm edits<select id="pAutoConfirmEdit"><option value="off">Off</option><option value="edit">Edit</option><option value="reset">Reset</option><option value="both">Both</option></select></label>
+      <label>Turbo Build<select id="pTurboBuild"><option value="1">On</option><option value="0">Off</option></select></label>
+      <label>Edit tooltip<select id="pEditTooltip"><option value="1">On</option><option value="0">Off</option></select></label>
       <label>Voice chat<select id="pVc"><option value="0">Off</option><option value="1">On</option></select></label>
     </div></section>
   </div>
@@ -1357,7 +1367,8 @@ function addPiece(type,ix,iy,iz,a,mat,anchored,win,door,edit){
   const box=pieceBox(type,ix,iy,iz,a);const M=MATS[mat];const maxHp=anchored?M.hp*1.2:M.hp;
   const p={key,type,ix,iy,iz,a,mat,anchored,box,maxHp,hp:anchored?maxHp:Math.max(10,maxHp*.1),build:anchored?0:M.build,buildT:0,win:!!win,edit:edit||null};
   const editCells=edit?(edit.startsWith('custom:')?edit.slice(7).split(',').map(Number):WALL_EDIT_TYPES.find(type=>type.name===edit)?.cells):null;
-  const geo=type==='floor'?G_FLOOR:type==='wall'?(door?G_WALL_DOOR[a]:win?G_WALL_WIN[a]:edit?customWallEditGeo(editCells,a):G_WALL[a]):type==='ramp'?G_RAMP:G_CONE;
+  const geo=type!=='wall'&& editCells&& editCells.length?pieceEditGeo(type,editCells):type==='floor'?G_FLOOR:type==='wall'?(door?G_WALL_DOOR[a]:win?G_WALL_WIN[a]:edit?customWallEditGeo(editCells,a):G_WALL[a]):type==='ramp'?G_RAMP:G_CONE;
+  p.editCells=editCells;
   const mesh=new THREE.Mesh(geo,anchored?PMAT[mat]:PMAT_B[mat]);
   if(type==='cone')mesh.position.set((ix+.5)*T,iy*H,(iz+.5)*T);else mesh.position.set((box.minx+box.maxx)/2,(box.miny+box.maxy)/2,(box.minz+box.maxz)/2);
   if(type==='ramp'){mesh.rotation.order='YXZ';mesh.rotation.y=a*Math.PI/2;mesh.rotation.x=-RAMP_ANG;}
@@ -1400,7 +1411,7 @@ function destroyPiece(p,check){removePiece(p);const b=p.box;
   const n=p.type==='floor'?7:9;for(let i=0;i<n;i++)spawnChunk(rand(b.minx,b.maxx),rand(b.miny,b.maxy),rand(b.minz,b.maxz),p.mat,rand(-3,3),rand(0,4),rand(-3,3));
   const cx=(b.minx+b.maxx)/2,cy=(b.miny+b.maxy)/2,cz=(b.minz+b.maxz)/2;for(let i=0;i<10;i++)smoke.spawn(cx+rand(-2,2),cy+rand(-1.5,1.5),cz+rand(-2,2),rand(-.5,.5),rand(.2,1),rand(-.5,.5),rand(1,2),1.2,3.5,.55,.5,.45,.35,-.2,.6);
   sfxAt('break',cx,cy,cz);if(check)checkCollapse(b);}
-function surfaceAt(p,x,z){const b=p.box;
+function surfaceAt(p,x,z){const b=p.box;if(p.editCells&& p.type!=='wall'&& pieceHole(p,x,z))return -1e9;
   if(p.type==='floor'){if(x>=b.minx-.3&& x<=b.maxx+.3&& z>=b.minz-.3&& z<=b.maxz+.3)return b.maxy;return -1e9;}
   if(x<b.minx||x>b.maxx||z<b.minz||z>b.maxz)return -1e9;
   if(p.type==='ramp'){const lx=(x-b.minx)/T,lz=(z-b.minz)/T;const u=p.a===0?lz:p.a===1?lx:p.a===2?1-lz:1-lx;return b.miny+u*H+.18;}
@@ -1963,7 +1974,8 @@ function collide(c){
   const f=c.pos.y,hh=c.h;const cx=Math.floor(c.pos.x/T),cz=Math.floor(c.pos.z/T);
   for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const s=columns.get(ckey(cx+dx,cz+dz));if(!s)continue;
     for(const p of s){if(p.type==='ramp'||p.type==='cone')continue;const b=p.box;
-      if(p.type==='floor'){if(!(b.miny>f+.75&& b.miny<f+hh))continue;}else if(!(b.miny<f+hh-.05&& b.maxy>f+.4))continue;
+      if(p.type==='floor'){if(!(b.miny>f+.75&& b.miny<f+hh))continue;if(pieceHole(p,c.pos.x,c.pos.z))continue;}else if(!(b.miny<f+hh-.05&& b.maxy>f+.4))continue;
+      if(wallGap(p,c.pos.x,c.pos.z,f,f+hh))continue;
       if(p.door){doorCollide(c,p);continue;}
       const x=c.pos.x,z=c.pos.z;const qx=clamp(x,b.minx,b.maxx),qz=clamp(z,b.minz,b.maxz);const ddx=x-qx,ddz=z-qz,d2=ddx*ddx+ddz*ddz;
       if(d2<RAD*RAD){if(d2>1e-8){const d=Math.sqrt(d2),push=RAD-d;c.pos.x+=ddx/d*push;c.pos.z+=ddz/d*push;const vn=(c.vel.x*ddx+c.vel.z*ddz)/d;if(vn<0){c.vel.x-=ddx/d*vn;c.vel.z-=ddz/d*vn;}}
@@ -2253,7 +2265,7 @@ function buildTarget(c,type,fx,fz,pitch){
   if(rp&&(tx!==rp.ix||tz!==rp.iz)){const rdx=[0,1,0,-1][rp.a],rdz=[1,0,-1,0][rp.a];const k=(tx-rp.ix)*rdx+(tz-rp.iz)*rdz;if(k>0)lvl=rp.iy+k;}
   return liftOutOfHill({type,ix:tx,iy:lvl,iz:tz,a:type==='ramp'?dirA:0});}
 function liftOutOfHill(tg){for(let n=0;n<4;n++){const b=pieceBox(tg.type,tg.ix,tg.iy,tg.iz,tg.a);let th=-1e9;for(const [u,v] of [[.5,.5],[.15,.15],[.85,.85],[.15,.85],[.85,.15]])th=Math.max(th,terrainH(lerp(b.minx,b.maxx,u),lerp(b.minz,b.maxz,v)));
-  const buried=tg.type==='floor'?b.maxy<th-.05:tg.type==='ramp'?b.miny<th-H*.4:b.miny<th-H*.55;if(!buried)break;tg.iy++;}return tg;}
+  const buried=tg.type==='floor'?b.maxy<th-.05:tg.type==='ramp'?b.miny<th-1.2:b.miny<th-1;if(!buried)break;tg.iy++;}return tg;}
 function tryBuild(c,tg){if(!tg||!MODE.build)return null;
   if(c.mats[c.mat]<10){const alt=MAT_ORDER.find(m=>c.mats[m]>=10);if(c===player||!alt)return null;c.mat=alt;}
   if(pieces.has(pieceKey(tg.type,tg.ix,tg.iy,tg.iz,tg.a)))return null;const p=addPiece(tg.type,tg.ix,tg.iy,tg.iz,tg.a,c.mat,false);if(!p)return null;
@@ -2585,7 +2597,7 @@ function medal(){if(gameTime-streakT<7)streakN++;else streakN=1;streakT=gameTime
 
 // ---------- mantling and sliding ----------
 function ledgeBlocked(x,z,y0,y1){const s=columns.get(ckey(Math.floor(x/T),Math.floor(z/T)));if(!s)return false;
-  for(const p of s){if(p.type==='ramp'||p.type==='cone')continue;const b=p.box;if(x>b.minx-RAD&& x<b.maxx+RAD&& z>b.minz-RAD&& z<b.maxz+RAD&& b.miny<y1&& b.maxy>y0)return true;}return false;}
+  for(const p of s){if(p.type==='ramp'||p.type==='cone')continue;if(p.type==='floor'&& pieceHole(p,x,z))continue;if(wallGap(p,x,z,y0,y1))continue;const b=p.box;if(x>b.minx-RAD&& x<b.maxx+RAD&& z>b.minz-RAD&& z<b.maxz+RAD&& b.miny<y1&& b.maxy>y0)return true;}return false;}
 function findLedge(p,fx,fz,minH,maxH){const px=p.pos.x+fx*.8,pz=p.pos.z+fz*.8,feet=p.pos.y;const s=groundAt(px,pz,feet+maxH-.75,_gp);const dh=s-feet;
   if(dh<minH||dh>maxH)return null;if(!_gp.piece&& dh<1.1)return null;
   if(ledgeBlocked(px,pz,s+.1,s+1.75)||ledgeBlocked(p.pos.x,p.pos.z,feet+p.h,s+1.8))return null;return new V3(px,s,pz);}
@@ -3072,7 +3084,12 @@ function botBuildTick(b){const ai=b.ai;if(!b.buildQ||!b.buildQ.length)return;
   const q=b.buildQ.shift();let dx=q.dx,dz=q.dz;
   // cover walls and ramps face the enemy *now*, so a bot that turned or strafed never builds behind itself
   const e=ai.enemy;if(e&& e.alive&&(q.type==='ramp'||q.face)){const ex=e.pos.x-b.pos.x,ez=e.pos.z-b.pos.z,el=Math.hypot(ex,ez)||1;dx=ex/el;dz=ez/el;}
-  if(tryBuild(b,buildTarget(b,q.type,dx,dz,0)))log.push(gameTime);b.nextBuildT=gameTime+rand(.32,.55)/Math.max(.6,ai.skill);}
+  const bp=tryBuild(b,buildTarget(b,q.type,dx,dz,0));if(bp){log.push(gameTime);if((bp.type==='wall'&& Math.random()<.3*ai.skill)||(bp.type!=='wall'&& Math.random()<.08)){const t0=rand(.7,1.4);setTimeout(()=>{if(gameState==='play')botEditPiece(b,bp);},t0*1000);}}b.nextBuildT=gameTime+rand(.32,.55)/Math.max(.6,ai.skill);}
+function botEditPiece(b,p){if(!b.alive||!pieces.has(p.key)||p.owner!==b||p.type==='cone')return;const {type,ix,iy,iz,a,mat,hp,maxHp}=p;let win=false,door=false,edit=null;
+  if(type==='wall'){const r=Math.random();if(r<.45)win=true;else if(r<.7)door=true;else edit=Math.random()<.5?'wide-window':'half-wall';}
+  else if(type==='floor')edit='custom:'+randi(0,3);else if(type==='ramp')edit='custom:'+(Math.random()<.5?'0,3,6':'2,5,8');
+  removePiece(p);const u=addPiece(type,ix,iy,iz,a,mat,true,win,door,edit);if(!u)return;u.anchored=false;u.hp=Math.min(hp,u.maxHp);u.maxHp=maxHp;u.owner=b;
+  sfxAt('build',(u.box.minx+u.box.maxx)/2,u.box.miny+1,(u.box.minz+u.box.maxz)/2);}
 function healUseful(c,id){const h=HEALS[id];return (h.hp&& c.hp<h.cap)||(h.sh&& c.shield<h.cap);}
 function canSee(a,b){const o0=a.eye();for(const hy of [1.3,1.65,.7]){const t=new V3(b.pos.x,b.pos.y+hy,b.pos.z);const d=t.clone().sub(o0);const dist=d.length();d.divideScalar(dist);let o=o0.clone(),left=dist+1;
     for(let k=0;k<4;k++){const h=castRay(o,d,left,a,k?0:.3);if(h.ud&& h.ud.char===b)return true;
@@ -3454,7 +3471,7 @@ addEventListener('keydown',e=>{
   if(gameState!=='play')return;
   if(uiOpen==='chat'){if(e.code==='Enter'){e.preventDefault();sendChat();}else if(e.code==='Escape'){e.preventDefault();$('chatIn').value='';sendChat();}return;}
   if(isBound(e.code,'chat')&& !uiOpen&& player&& gameState==='play'){e.preventDefault();openChat();return;}
-  if(uiOpen){if(uiOpen==='edit'){if(e.code==='Escape'){e.preventDefault();closeWallEdit();}else if(!e.repeat&&isBound(e.code,'editWall')){e.preventDefault();confirmWallEdit();}return;}if(e.code==='Escape'||((isBound(e.code,'shop')||isBound(e.code,'buildRamp')||isBound(e.code,'interact'))&& uiOpen==='shop')||(isBound(e.code,'inventory')&& uiOpen==='inv')){e.preventDefault();closeUI();}else if(isBound(e.code,'inventory'))e.preventDefault();return;}
+  if(uiOpen){if(uiOpen==='edit'){if(e.code==='Escape'){e.preventDefault();closeWallEdit();}else if(!e.repeat&&(isBound(e.code,'editWall')||isBound(e.code,'buildToggle'))){e.preventDefault();confirmWallEdit();}else if(!keys[e.code]){keys[e.code]=true;if(isBound(e.code,'jump'))spaceEdge=true;if(isBound(e.code,'crouch'))ctrlEdge=true;}return;}if(e.code==='Escape'||((isBound(e.code,'shop')||isBound(e.code,'buildRamp')||isBound(e.code,'interact'))&& uiOpen==='shop')||(isBound(e.code,'inventory')&& uiOpen==='inv')){e.preventDefault();closeUI();}else if(isBound(e.code,'inventory'))e.preventDefault();return;}
   // keep browser shortcuts (save, bookmark, find, print) from breaking immersion mid-fight
   if(GAME_BIND_ACTIONS.some(([action])=>isBound(e.code,action))||((e.metaKey||e.ctrlKey)&& ['KeyS','KeyD','KeyF','KeyP','KeyG','KeyH','KeyU','KeyB'].includes(e.code)))e.preventDefault();
   if(keys[e.code])return;keys[e.code]=true;if(isBound(e.code,'jump'))spaceEdge=true;if(isBound(e.code,'crouch'))ctrlEdge=true;
@@ -3558,7 +3575,11 @@ function updatePlayer(dt){
   if(p.state!=='ground'){hideGhost();weakSprite.visible=false;updateArc(false);mouseLPressed=false;$('prompt').classList.add('hidden');return;}
   aimAssist(dt);
   const {f}=camVectors();
-  if(buildMode){const tg=buildTarget(p,buildType,fx,fz,pitch);const ok=!pieces.has(pieceKey(tg.type,tg.ix,tg.iy,tg.iz,tg.a))&& p.mats[p.mat]>=10;showGhost(tg,ok);if(mouseL&& ok)tryBuild(p,tg);updateArc(false);}
+  if(buildMode){const tg=buildTarget(p,buildType,fx,fz,pitch),hasMats=p.mats[p.mat]>=10;const ok=!pieces.has(pieceKey(tg.type,tg.ix,tg.iy,tg.iz,tg.a))&& hasMats;showGhost(tg,ok);
+    // clicking where one of your own pieces of this type already stands opens its edit grid
+    const ex=pieces.get(pieceKey(tg.type,tg.ix,tg.iy,tg.iz,tg.a));if(mouseLPressed&& ex&& ex.owner===p&& PIECE_EDIT_GRID[ex.type]&& !uiOpen){mouseLPressed=false;hideGhost();openPieceEdit(ex,null);}
+    else if(mouseL&& PROFILE.set.turboBuild!=='0'&&!hasMats){mouseL=false;centerMsg('OUT OF MATERIALS','Collect materials or select another material, then press build again');}
+    else if(mouseL&& ok&& !uiOpen&&(PROFILE.set.turboBuild!=='0'||mouseLPressed)){const np=tryBuild(p,tg);if(np&& mouseLPressed&& PROFILE.set.turboBuild==='0'&& PROFILE.set.editAfterBuild!=='0'&& PIECE_EDIT_GRID[np.type]&& !uiOpen){mouseLPressed=false;hideGhost();openPieceEdit(np,null);}}updateArc(false);}
   else{hideGhost();
     if(p.sel===0){if(mouseL&& p.swing<=0&& gameTime>=(p.swingCd||0))swingPickaxe(p,camera.position.clone(),f,camDist);updateArc(false);}
     else if(it&& it.type==='gun'){const W=GUNS[it.id];updateArc(false);
@@ -3781,7 +3802,7 @@ const COS={skin:{list:SKIN_LIST,by:SKIN_BY,label:'Outfits'},tool:{list:TOOLS,by:
 
 // ---------- profile (saved in this browser) ----------
 const STORE_KEY='stormfall.profile.v2';
-const RANK_TIERS=[{name:'Bronze',min:0,color:'#b87333',numeral:'I'},{name:'Silver',min:300,color:'#c0c6cc',numeral:'II'},{name:'Gold',min:800,color:'#e7b93f',numeral:'III'},{name:'Platinum',min:1500,color:'#5ac7b5',numeral:'IV'},{name:'Diamond',min:2600,color:'#58bde8',numeral:'V'},{name:'Elite',min:4000,color:'#a65bdb',numeral:'VI'},{name:'Champion',min:6000,color:'#e64545',numeral:'VII'},{name:'Unreal',min:8500,color:'#e9f6ff',numeral:'VIII'}];
+const RANK_TIERS=[{name:'Bronze',min:0,color:'#b87333',numeral:'I'},{name:'Silver',min:300,color:'#c0c6cc',numeral:'II'},{name:'Gold',min:800,color:'#e7b93f',numeral:'III'},{name:'Platinum',min:1500,color:'#5ac7b5',numeral:'IV'},{name:'Diamond',min:2600,color:'#58bde8',numeral:'V'},{name:'Elite',min:4000,color:'#a65bdb',numeral:'VI'},{name:'Champion',min:6000,color:'#e64545',numeral:'VII'},{name:'Unreal',min:8500,color:'#e9f6ff',numeral:'VIII'},{name:'Unreal Legends',min:15000,color:'#9c31a4',numeral:'IX'}];
 const COMPETITIVE_MODES=new Set(['br','nobuild']);
 function rankedMode(){return COMPETITIVE_MODES.has(MODE.id)&&!MODE.respawn;}
 function rankFor(points){let rank=RANK_TIERS[0];for(const tier of RANK_TIERS)if(points>=tier.min)rank=tier;return rank;}
@@ -3808,7 +3829,7 @@ const DEFAULT_BINDS={
 };
 const CONTROL_GROUPS=[
   {title:'Movement',actions:[['moveForward','Move forward'],['moveBack','Move backward'],['moveLeft','Move left'],['moveRight','Move right'],['sprint','Sprint'],['crouch','Crouch / slide'],['jump','Jump']]},
-  {title:'Combat & building',actions:[['fire','Shoot / harvest'],['aim','Aim / change material'],['ping','Place ping'],['interact','Use / interact'],['reload','Reload'],['buildToggle','Toggle build mode'],['buildWall','Wall'],['buildFloor','Floor'],['buildRamp','Ramp'],['buildRoof','Roof'],['editWall','Edit / confirm wall'],['harvest','Harvest tool']]},
+  {title:'Combat & building',actions:[['fire','Shoot / harvest'],['aim','Aim / change material'],['ping','Place ping'],['interact','Use / interact'],['reload','Reload'],['buildToggle','Toggle build mode'],['buildWall','Wall'],['buildFloor','Floor'],['buildRamp','Ramp'],['buildRoof','Roof'],['editWall','Edit / confirm build'],['harvest','Harvest tool']]},
   {title:'Inventory & menus',actions:[['slot1','Hotbar slot 1'],['slot2','Hotbar slot 2'],['slot3','Hotbar slot 3'],['slot4','Hotbar slot 4'],['slot5','Hotbar slot 5'],['slot6','Hotbar slot 6'],['slotPrevious','Previous hotbar slot'],['slotNext','Next hotbar slot'],['inventory','Inventory'],['map','Map'],['shop','Shop'],['emote','Emote'],['camera','Change camera'],['shoulder','Swap camera shoulder'],['drop','Drop item'],['chat','Open chat'],['pause','Pause']]},
   {title:'Map editor',actions:[['editorForward','Fly forward'],['editorBack','Fly backward'],['editorLeft','Fly left'],['editorRight','Fly right'],['editorFast','Fly faster'],['editorUp','Fly up'],['editorDown','Fly down'],['editorRotate','Rotate placement'],['editorRadiusDown','Decrease brush size'],['editorRadiusUp','Increase brush size'],['editorUndo','Undo'],['editorSave','Save map']]}
 ];
@@ -4082,11 +4103,11 @@ function initMenuUI(){loadPets();initSaveUI();initWallEditUI();
   $('itemShopGrid').onclick=e=>{const c=e.target.closest('.card');if(!c)return;const k=c.dataset.kind,id=c.dataset.id,it=COS[k].by[id];initAudio();
     if(PROFILE.owned[k].includes(id)){toast('Already owned — equip it in the Locker');return;}
     if(PROFILE.sb<it.price){toast('Not enough Storm Bucks. Earn more by playing matches.');sfx('deny');return;}
-    PROFILE.sb-=it.price;PROFILE.owned[k].push(id);PROFILE.eq[k]=id;saveProfile();sfx('buy');toast(`Purchased and equipped ${it.name}`);renderItemShop();renderWallet();if(k!=='emote')spawnLobbyChar();};
+    confirmBuy(it.name,it.price+' Storm Bucks',()=>{if(PROFILE.sb<it.price||PROFILE.owned[k].includes(id))return;PROFILE.sb-=it.price;PROFILE.owned[k].push(id);PROFILE.eq[k]=id;saveProfile();sfx('buy');toast(`Purchased and equipped ${it.name}`);renderItemShop();renderWallet();if(k!=='emote')spawnLobbyChar();});};
   const menu=$('menu');menu.addEventListener('pointerdown',e=>{if(e.target.closest('.pane,.modecard,button,.topbar'))return;LOBBY.drag=e.clientX;});
   addEventListener('pointermove',e=>{if(LOBBY.drag==null)return;LOBBY.rot+=(e.clientX-LOBBY.drag)*.012;LOBBY.drag=e.clientX;});addEventListener('pointerup',()=>{LOBBY.drag=null;});
   // settings persist between sessions
-  const st=PROFILE.set,settingIds=['qual','aa','sens','fov','cam','tod','diff','arl','autoConfirmEdit','vc','renderScale','shadows','bloom','sfx','mus','inputMode'];
+  const st=PROFILE.set,settingIds=['qual','aa','sens','fov','cam','tod','diff','arl','editAfterBuild','autoConfirmEdit','turboBuild','editTooltip','vc','renderScale','shadows','bloom','sfx','mus','inputMode'];
   renderControlBinds();
   let pendingControl=null;
   $('controlBindings').addEventListener('click',e=>{const clear=e.target.closest('button[data-clear]');if(clear){const action=clear.dataset.clear,slot=+clear.dataset.slot,codes=[...bindCodes(action)];codes[slot]='';CONTROL_BINDS[action]=codes;PROFILE.set.binds=Object.fromEntries(Object.entries(CONTROL_BINDS).map(([key,items])=>[key,[...items]]));saveProfile();pendingControl=null;renderControlBinds();toast('Control binding cleared');return;}
@@ -4137,11 +4158,14 @@ function initMenuUI(){loadPets();initSaveUI();initWallEditUI();
     if(id==='fov'){$('pFov').value=value;SET.fov=+value;$('pFovVal').textContent=value;}
     if(id==='cam'){$('pCam').value=value;SET.cam=+value;}
     if(id==='arl'){$('pArl').value=value;SET.autoReload=value!=='0';}
+    if(id==='editAfterBuild')$('pEditAfterBuild').value=value;
     if(id==='autoConfirmEdit')$('pAutoConfirmEdit').value=value;
+    if(id==='turboBuild')$('pTurboBuild').value=value;
+    if(id==='editTooltip'){$('pEditTooltip').value=value;editHint(uiOpen==='edit');}
     if(id==='mus')$('pMus').value=value;
     if(id==='vc')$('pVc').value=value;
   });
-  $('settingsReset').onclick=()=>{const defaults={inputMode:TOUCH.pref,qual:'auto',aa:'1',sens:'1',fov:'80',cam:'0',tod:'dynamic',diff:'1',arl:'1',autoConfirmEdit:'off',vc:'0',renderScale:'1',shadows:'1',bloom:'1',sfx:'.75',mus:'.6'};
+  $('settingsReset').onclick=()=>{const defaults={inputMode:TOUCH.pref,qual:'auto',aa:'1',sens:'1',fov:'80',cam:'0',tod:'dynamic',diff:'1',arl:'1',editAfterBuild:'1',autoConfirmEdit:'off',turboBuild:'1',editTooltip:'1',vc:'0',renderScale:'1',shadows:'1',bloom:'1',sfx:'.75',mus:'.6'};
     for(const [key,value] of Object.entries(defaults)){PROFILE.set[key]=value;const control=$(key==='diff'?'diff':key);if(control)control.value=value;}
     $('setDiff').value='1';for(const id of [...settingIds,'setDiff'])$(id).dispatchEvent(new Event('input',{bubbles:true}));toast('Settings restored to defaults');};
   AQ.on=$('qual').value==='auto';SET.quality=AQ.on?(TOUCH.on?'low':'high'):$('qual').value;SET.sens=+$('sens').value;SET.fov=+$('fov').value;SET.aa=+$('aa').value;SET.cam=+$('cam').value;SET.autoReload=$('arl').value!=='0';
@@ -4151,7 +4175,7 @@ function initMenuUI(){loadPets();initSaveUI();initWallEditUI();
 
 
 // ---------- How to Play guide and the welcome / update notes window (opens once each time the game is opened) ----------
-const SF_VERSION='1.2';
+const SF_VERSION='1.3';
 const UPDATE_NOTES=[
   ['Monthly events','Every month now has a 3-day event, like Halloween Night in October with jack-o’-lanterns, a night sky and trick-or-treat pumpkins. Day 1 warms up, day 2 is the main event with its own special, and day 3 is the encore. Play on day 2 to earn that event’s outfit. See the <b>Events</b> tab.'],
   ['Easter eggs and 100 sidekicks','There are now 100 sidekicks. Most can only be hatched from the golden eggs in the Easter Egg Hunt event, and every egg has a 50% chance to hatch one.'],
@@ -4160,7 +4184,8 @@ const UPDATE_NOTES=[
   ['Rare and Legendary chests','Chests that glow <b style="color:#2f9bff">blue</b> or <b style="color:#ffae1a">gold</b> always hold Rare or Legendary loot. Look for the coloured gem on the lock.'],
   ['Hunger Games overhaul','No storm, and building is on. Escape forest fires, poison fog and tracker jackers, watch for hidden traps and rigged chests (look for the red tripwire), dodge Peacekeeper drones, and leave the dark nightlock berries alone. In the finale, mutts drive everyone to the Cornucopia.'],
   ['New Settings','Settings are grouped, with render scale, shadows, bloom and a separate sound-effects volume. Most of them are in the pause menu too, and Restore defaults resets everything.'],
-  ['How to Play tab','This guide is now a tab in the lobby, so you can check controls and tips any time.']];
+  ['How to Play tab','This guide is now a tab in the lobby, so you can check controls and tips any time.'],
+  ['Editing','Walls, floors, stairs and ceilings can all be edited. The Open edit after building setting controls whether a placed piece opens its grid; you can also press your edit bind while looking at one of your builds. Click or drag to select squares (blue is solid, yellow gets cut out), then press Q or your edit bind to confirm. Esc cancels.']];
 function howtoHTML(){const T=TOUCH.on;const rar=RAR.map((n,i)=>`<span style="background:${RAR_COL[i]}">${n}</span>`).join('');
   const keys=T?`<dl class="howKeys"><dt>Left stick</dt><dd>Move. Push all the way to sprint</dd><dt>Drag right side</dt><dd>Look and aim</dd><dt>FIRE · AIM</dt><dd>Shoot or swing · aim down sights or scope</dd><dt>JUMP</dt><dd>Jump, dive from the plane, open the glider</dd><dt>USE</dt><dd>Open chests, pick up, drive, doors. It glows when something is in reach</dd><dt>BUILD</dt><dd>Then WALL, FLOOR, RAMP or ROOF</dd><dt>Hotbar</dt><dd>Tap a slot to switch weapons</dd><dt>Top row</dt><dd>ITEMS, DROP, SHOP, MAP, CHAT and pause</dd></dl>`
     :`<dl class="howKeys"><dt>W A S D</dt><dd>Move · Shift sprint · Ctrl crouch or slide · Space jump</dd><dt>Mouse</dt><dd>Left fire · Right aim (snipers scope in) · Wheel switch slots</dd><dt>1 to 6 · F</dt><dd>Hotbar slots · Storm Blade (sword and harvest tool)</dd><dt>E · R · H</dt><dd>Interact · reload · drop the selected item</dd><dt>Q · Z X C V · G</dt><dd>Build mode · wall, floor, ramp, roof · edit your wall</dd><dt>Space</dt><dd>Dive from the plane · open the glider (W dives faster)</dd><dt>M · Tab · U</dt><dd>Map · inventory · in-match shop</dd><dt>Enter · Esc</dt><dd>Chat · pause</dd></dl>`;
@@ -4250,6 +4275,9 @@ const SHOP_ITEMS=[gunBuy('pistol',1,60,'Reliable sidearm'),gunBuy('smg',2,180,'F
   {cat:'Materials',name:'Metal ×100',desc:'Toughest builds',price:80,rar:2,icon:()=>'<svg viewBox="0 0 32 32"><rect x="5" y="9" width="22" height="16" rx="2"/><circle cx="9" cy="13" r="1.5" fill="#000"/><circle cx="23" cy="21" r="1.5" fill="#000"/></svg>',buy:p=>{p.mats.metal=Math.min(999,p.mats.metal+100);return true;}}];
 function itemPrice(it){if(it.upg){const h=player.item;return h&& h.type==='gun'&& h.r<4?[150,250,350,450][h.r]:0;}return it.price;}
 const shopVisible=it=>MODE.id!=='tdm'||(it.cat==='Weapons'&& !/Grenade|Shockwave|Launch Pad/.test(it.name));
+function confirmBuy(name,price,onYes){let el=$('buyConfirm');if(!el){el=document.createElement('div');el.id='buyConfirm';el.innerHTML='<div class="bcWin pane"><h3>Are you sure?</h3><p></p><div class="bcBtns"><button class="btn ghost" data-a="no">Cancel</button><button class="btn" data-a="yes">Buy</button></div></div>';document.body.appendChild(el);}
+  el.querySelector('p').innerHTML=`Buy <b>${name}</b> for ${price}?`;el.classList.add('on');
+  el.onclick=e=>{const a=e.target.closest('[data-a]');if(!a)return;el.classList.remove('on');if(a.dataset.a==='yes')onYes();else sfx('click');};}
 function renderShop(){if(MODE.id==='tdm')shopCat='Weapons';$('shopGold').textContent=player.gold;$('shopCats').innerHTML=(MODE.id==='tdm'?['Weapons']:SHOP_CATS).map(c=>`<button data-c="${c}" class="${c===shopCat?'on':''}">${c}</button>`).join('');
   $('shopGrid').innerHTML=SHOP_ITEMS.map((it,i)=>{if(it.cat!==shopCat||!shopVisible(it))return '';const pr=itemPrice(it);let dis=player.gold<pr;let lbl=coinHTML(pr);
     if(it.upg&&!pr){dis=true;lbl='Hold a gun below Legendary';}if(it.perk&& player.perks[it.perk]){dis=true;lbl='Owned';}
@@ -4262,7 +4290,7 @@ function renderInv(){const p=player;$('invGold').textContent=p.gold;
   $('invAmmo').innerHTML=Object.keys(AMMO).map(a=>`<span style="border-color:${AMMO[a].col}">${AMMO[a].name}: ${p.ammo[a]}</span>`).join('')+MAT_ORDER.map(m=>`<span>${MATS[m].name}: ${p.mats[m]}</span>`).join('')+Object.keys(p.perks).map(k=>`<span style="color:var(--gold)">Perk: ${(SHOP_ITEMS.find(s=>s.perk===k)||{}).name}</span>`).join('');}
 function initShopUI(){$('shopCats').onclick=e=>{const b=e.target.closest('button');if(!b)return;shopCat=b.dataset.c;renderShop();sfx('ui');};
   $('shopGrid').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b)return;const it=SHOP_ITEMS[+b.dataset.i];const pr=itemPrice(it);const p=player;
-    if(p.gold<pr){sfx('deny');return;}if(it.buy(p)){p.gold-=pr;sfx('buy');toast(it.name+' purchased');hotKey='';}else sfx('deny');renderShop();};
+    if(p.gold<pr){sfx('deny');return;}confirmBuy(it.name,pr+' gold',()=>{if(p.gold<pr||!p.alive){sfx('deny');return;}if(it.buy(p)){p.gold-=pr;sfx('buy');toast(it.name+' purchased');hotKey='';}else sfx('deny');renderShop();});};
   $('shopClose').onclick=closeUI;$('invClose').onclick=closeUI;
   $('invGrid').onclick=e=>{const b=e.target.closest('button[data-d]');if(!b)return;const i=+b.dataset.d,p=player,it=p.slots[i];if(!it)return;p.slots[i]=null;const f=camVectors().f;spawnPickup(it,p.pos.x+f.x*1.2,p.pos.y+.6,p.pos.z+f.z*1.2,true);if(p.sel===i+1)p.sel=0;sfx('click');renderInv();};}
 
@@ -4572,6 +4600,28 @@ const WALL_EDIT_TYPES=[
   {name:'diagonal',label:'Diagonal',cells:[0,4,8]}
 ];
 const WALL_EDIT_GEOS=new Map();
+// floors and ceilings edit on a 2x2 grid, stairs on a 3x3 grid laid along the slope (row 0 at the bottom); selected cells are cut out
+const PIECE_EDIT_GRID={wall:[3,3],floor:[2,2],cone:[2,2],ramp:[3,3]};
+const PIECE_EDIT_GEOS=new Map();
+function pieceEditGeo(type,cells){const key=type+':'+cells.join(',');if(PIECE_EDIT_GEOS.has(key))return PIECE_EDIT_GEOS.get(key);let geo;
+  if(type==='floor'){const parts=[];for(let i=0;i<4;i++){if(cells.includes(i))continue;const col=i%2,row=Math.floor(i/2);parts.push({g:tbox(T/2,.3,T/2,col/2,0),p:[-T/4+col*T/2,0,-T/4+row*T/2]});}geo=mergeParts(parts,false);}
+  else if(type==='ramp'){const L=Math.hypot(T,H)+.06,parts=[];for(let i=0;i<9;i++){if(cells.includes(i))continue;const col=i%3,row=Math.floor(i/3);parts.push({g:tbox(T/3,.3,L/3,col/3,0),p:[-T/2+(col+.5)*T/3,0,-L/2+(row+.5)*L/3]});}geo=mergeParts(parts,false);}
+  else{// ceiling: each quarter of the pyramid is two triangles from the peak, drawn on both sides
+    const pos=[],uv=[],h=2.2,c=T/2,tri=(a,b,d)=>{for(const v of [a,b,d,a,d,b]){pos.push(v[0],v[1],v[2]);uv.push((v[0]+v[2])/T+.5,v[1]/h);}};
+    for(let i=0;i<4;i++){if(cells.includes(i))continue;const sx=i%2?1:-1,sz=Math.floor(i/2)?1:-1,top=[0,h,0],corner=[sx*c,0,sz*c];
+      tri(top,[sx*c,0,0],corner);tri(top,corner,[0,0,sz*c]);}
+    geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();geo.computeBoundingSphere();geo.computeBoundingBox();}
+  PIECE_EDIT_GEOS.set(key,geo);return geo;}
+// which edit cell a point on a floor, ceiling or stair falls in
+function pieceEditCell(p,x,z){const b=p.box;
+  if(p.type==='floor'||p.type==='cone'){const col=x<(b.minx+b.maxx)/2?0:1,row=z<(b.minz+b.maxz)/2?0:1;return row*2+col;}
+  const lx=clamp((x-b.minx)/T,0,.999),lz=clamp((z-b.minz)/T,0,.999),u=p.a===0?lz:p.a===1?lx:p.a===2?1-lz:1-lx,v=p.a===0?lx:p.a===1?1-lz:p.a===2?1-lx:lz;
+  return Math.floor(u*3)*3+Math.floor(v*3);}
+// is there an opening in this wall where a body stands (feet to head, at this spot along the wall)?
+function wallGap(p,x,z,feet,head){if(p.type!=='wall'||!p.editCells||!p.editCells.length)return false;const b=p.box,tw=T/3,th=H/3;
+  const col=p.a===0?Math.floor((x-b.minx)/tw):Math.floor((b.maxz-z)/tw);if(col<0||col>2)return false;
+  for(let row=0;row<3;row++){const top=b.maxy-row*th,bot=top-th;if(bot<head&& top>feet+.25&& !p.editCells.includes(row*3+col))return false;}return true;}
+function pieceHole(p,x,z){return p.type!=='wall'&& p.editCells&& p.editCells.length&& p.editCells.includes(pieceEditCell(p,x,z));}
 function wallEditType(cells){const key=[...cells].sort((a,b)=>a-b).join(',');return WALL_EDIT_TYPES.find(type=>type.cells.join(',')===key)||null;}
 function customWallEditGeo(cells,axis){
   const key=`${axis}:${cells.join(',')}`;if(WALL_EDIT_GEOS.has(key))return WALL_EDIT_GEOS.get(key);
@@ -4602,28 +4652,57 @@ function createWallEditGrid(piece,hit){
   for(let i=0;i<=3;i++){const y=-H/2+i*tileH;points.push(new V3(-T/2,y,.07),new V3(T/2,y,.07));}
   const lines=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(points),wallEditLineMat);wallEditGrid.add(lines);scene.add(wallEditGrid);
 }
+// the edit grid for floors and ceilings (flat 2x2) and stairs (3x3 along the slope)
+const pieceEditEdges=new THREE.EdgesGeometry(wallEditTileGeo);
+function createPieceEditGrid(piece){
+  clearWallEditGrid();wallEditMirrored=false;const [cols,rows]=PIECE_EDIT_GRID[piece.type],b=piece.box;
+  wallEditGrid=new THREE.Group();wallEditGrid.renderOrder=40;let tw=T/cols,tl=T/rows,lift=.2;
+  if(piece.type==='ramp'){piece.mesh.updateMatrixWorld(true);wallEditGrid.matrixAutoUpdate=false;wallEditGrid.matrix.copy(piece.mesh.matrixWorld);tl=(Math.hypot(T,H)+.06)/rows;}
+  else wallEditGrid.position.set((b.minx+b.maxx)/2,piece.type==='cone'?b.miny+.06:b.maxy+.04,(b.minz+b.maxz)/2);
+  if(piece.type==='cone')lift=0;
+  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const i=row*cols+col,sel=wallEditPattern.has(i);
+    const material=new THREE.MeshBasicMaterial({color:sel?'#ffad32':'#64c9ff',transparent:true,opacity:sel?.5:.2,side:THREE.DoubleSide,depthTest:false,depthWrite:false});
+    const tile=new THREE.Mesh(wallEditTileGeo,material);tile.rotation.x=-Math.PI/2;tile.scale.set(tw-.035,tl-.035,1);
+    tile.position.set(-T/2+(col+.5)*tw,lift,-(cols===rows&& piece.type!=='ramp'?T:tl*rows)/2+(row+.5)*tl);tile.userData.editTile=i;tile.renderOrder=40;
+    const edge=new THREE.LineSegments(pieceEditEdges,wallEditLineMat);edge.renderOrder=41;tile.add(edge);wallEditTiles.push(tile);wallEditGrid.add(tile);}
+  scene.add(wallEditGrid);}
 function toggleWallEditTile(i){if(wallEditPattern.has(i))wallEditPattern.delete(i);else wallEditPattern.add(i);updateWallEditGrid();}
 function setWallEditTile(i,selected){if(wallEditPattern.has(i)===selected)return;if(selected)wallEditPattern.add(i);else wallEditPattern.delete(i);updateWallEditGrid();}
 function wallEditCellsToLocal(cells){return [...cells].map(i=>wallEditMirrored?Math.floor(i/3)*3+(2-i%3):i).sort((a,b)=>a-b);}
 function wallEditCellsToGrid(cells){return cells.map(i=>wallEditMirrored?Math.floor(i/3)*3+(2-i%3):i);}
 function wallEditTileAtCrosshair(){scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);_er.setFromCamera({x:0,y:0},camera);return _er.intersectObjects(wallEditTiles,false)[0]?.object||null;}
 function startWallEdit(){const p=player;if(!p||!p.alive||p.state!=='ground'||p.vehicle)return;
-  if(!MODE.build){toast('Wall editing is disabled in '+MODE.name);return;}
+  if(!MODE.build){toast('Editing is disabled in '+MODE.name);return;}
   scene.updateMatrixWorld(true);_er.setFromCamera({x:0,y:0},camera);
   const hit=_er.intersectObjects(pieceMeshes,false).find(h=>h.object.userData.piece);
   const target=hit&&hit.object.userData.piece;
-  if(!target||target.type!=='wall'||target.owner!==p||hit.distance>8){toast('Look at one of your nearby walls to edit it');return;}
+  if(!target||!PIECE_EDIT_GRID[target.type]||target.owner!==p||hit.distance>8){toast('Look at one of your nearby builds to edit it');return;}
+  openPieceEdit(target,hit);
+}
+// open the edit grid on one of your pieces (from the edit key, or by clicking an existing piece in build mode)
+function openPieceEdit(target,hit){
+  if(!hit&& target.type==='wall'){const b=target.box,cx=(b.minx+b.maxx)/2,cz=(b.minz+b.maxz)/2,n=target.a===0?new V3(0,0,camera.position.z>cz?1:-1):new V3(camera.position.x>cx?1:-1,0,0);hit={face:{normal:n}};}
+  editHint(true);
+  if(target.type!=='wall'){wallEditPiece=target;wallEditPattern.clear();for(const i of target.editCells||[])wallEditPattern.add(i);createPieceEditGrid(target);updateWallEditGrid();uiOpen='edit';freeLook=!locked;if(!locked)requestLock();return;}
   wallEditPiece=target;wallEditPattern.clear();createWallEditGrid(target,hit);
   if(target.win)wallEditPattern.add(4);if(target.door){wallEditPattern.add(4);wallEditPattern.add(7);}
   if(target.edit){const type=WALL_EDIT_TYPES.find(item=>item.name===target.edit),cells=type?type.cells:target.edit.startsWith('custom:')?target.edit.slice(7).split(',').map(Number):[];for(const i of wallEditCellsToGrid(cells))wallEditPattern.add(i);}
   updateWallEditGrid();uiOpen='edit';freeLook=!locked;
   if(!locked)requestLock();
 }
-function closeWallEdit(){wallEditPiece=null;wallEditPattern.clear();clearWallEditGrid();if(uiOpen==='edit')uiOpen=null;
+function editHint(on){let el=$('editHint');if(!el){el=document.createElement('div');el.id='editHint';el.innerHTML='<b>EDIT</b><span>Click or drag squares to select</span><span><kbd>Q</kbd> or <kbd>G</kbd> confirm</span><span><kbd>Esc</kbd> cancel</span>';document.body.appendChild(el);}el.classList.toggle('on',!!on&&PROFILE.set.editTooltip!=='0');}
+function closeWallEdit(){editHint(false);wallEditPiece=null;wallEditPattern.clear();clearWallEditGrid();if(uiOpen==='edit')uiOpen=null;
   wallEditPointerId=null;wallEditStrokeTiles.clear();
   if(gameState==='play'&&!paused)requestLock();}
 function autoConfirmWallEdit(kind){const setting=PROFILE.set.autoConfirmEdit||'off';return setting==='both'||setting===kind;}
-function confirmWallEdit(){const old=wallEditPiece;if(!old||!pieces.has(old.key)){toast('That wall is no longer available');closeWallEdit();return;}
+function confirmWallEdit(){const old=wallEditPiece;if(!old||!pieces.has(old.key)){toast('That build is no longer available');closeWallEdit();return;}
+  if(old.type!=='wall'){const [cols,rows]=PIECE_EDIT_GRID[old.type],cells=[...wallEditPattern].sort((a,b)=>a-b),edit=cells.length?`custom:${cells.join(',')}`:null;
+    if(cells.length===cols*rows){toast('Leave at least one tile in place');return;}
+    if((old.edit||null)===edit){closeWallEdit();return;}
+    const {type,ix,iy,iz,a,mat,hp,maxHp,owner}=old;removePiece(old);const updated=addPiece(type,ix,iy,iz,a,mat,true,false,false,edit);
+    if(!updated){toast('Could not apply that edit');closeWallEdit();return;}
+    updated.anchored=false;updated.hp=Math.min(hp,updated.maxHp);updated.maxHp=maxHp;updated.owner=owner;
+    sfxAt('build',(updated.box.minx+updated.box.maxx)/2,updated.box.miny+1,(updated.box.minz+updated.box.maxz)/2);toast(edit?({floor:'Floor',cone:'Ceiling',ramp:'Stairs'}[type])+' edited':'Edit reset');if(edit)buildMode=false;closeWallEdit();return;}
   const cells=[...wallEditPattern].sort((a,b)=>a-b),type=wallEditType(cells),localCells=wallEditCellsToLocal(cells),localType=wallEditType(localCells),win=type?.name==='window',door=type?.name==='door',edit=type&&!win&&!door?(localType?.name===type.name?type.name:`custom:${localCells.join(',')}`):cells.length&&!type?`custom:${localCells.join(',')}`:null;
   if(cells.length===9){toast('Leave at least one wall tile in place');return;}
   if(!!old.win===win&&!!old.door===door&&(old.edit||null)===edit){closeWallEdit();return;}
@@ -4631,7 +4710,7 @@ function confirmWallEdit(){const old=wallEditPiece;if(!old||!pieces.has(old.key)
   const updated=addPiece('wall',ix,iy,iz,a,mat,true,win,door,edit);
   if(!updated){toast('Could not apply that wall edit');closeWallEdit();return;}
   updated.anchored=false;updated.hp=Math.min(hp,updated.maxHp);updated.maxHp=maxHp;updated.owner=owner;
-  sfxAt('build',(updated.box.minx+updated.box.maxx)/2,updated.box.miny+1,(updated.box.minz+updated.box.maxz)/2);toast(type?.label|| (edit?'Wall edited':'Wall reset'));closeWallEdit();
+  sfxAt('build',(updated.box.minx+updated.box.maxx)/2,updated.box.miny+1,(updated.box.minz+updated.box.maxz)/2);toast(type?.label|| (edit?'Wall edited':'Wall reset'));if(cells.length)buildMode=false;closeWallEdit();
 }
 function initWallEditUI(){addEventListener('pointerdown',e=>{if(uiOpen!=='edit'||e.button!==0)return;
     if(!locked)requestLock();
@@ -4766,7 +4845,7 @@ function autoQuality(dt){if(!AQ.on||gameState!=='play'||paused)return;AQ.acc+=dt
 
 // ---------- pause menu ----------
 function initPauseUI(){let exitArm=0;
-  $('pSetBtn').onclick=()=>{$('pSet').classList.toggle('hidden');$('pSens').value=SET.sens;$('pSensVal').textContent=SET.sens.toFixed(1);$('pFov').value=SET.fov;$('pFovVal').textContent=SET.fov;$('pAa').value=SET.aa;$('pMus').value=MUSIC.vol;$('pCam').value=SET.cam;$('pQual').value=AQ.on?'auto':SET.quality;$('pRenderScale').value=SET.renderScale;$('pRenderScaleVal').textContent=Math.round(SET.renderScale*100)+'%';$('pShadows').value=SET.shadows?'1':'0';$('pBloom').value=SET.bloom?'1':'0';$('pSfx').value=SET.sfx;$('pArl').value=SET.autoReload?'1':'0';$('pAutoConfirmEdit').value=PROFILE.set.autoConfirmEdit||'off';$('pVc').value=VC.on()?'1':'0';};
+  $('pSetBtn').onclick=()=>{$('pSet').classList.toggle('hidden');$('pSens').value=SET.sens;$('pSensVal').textContent=SET.sens.toFixed(1);$('pFov').value=SET.fov;$('pFovVal').textContent=SET.fov;$('pAa').value=SET.aa;$('pMus').value=MUSIC.vol;$('pCam').value=SET.cam;$('pQual').value=AQ.on?'auto':SET.quality;$('pRenderScale').value=SET.renderScale;$('pRenderScaleVal').textContent=Math.round(SET.renderScale*100)+'%';$('pShadows').value=SET.shadows?'1':'0';$('pBloom').value=SET.bloom?'1':'0';$('pSfx').value=SET.sfx;$('pArl').value=SET.autoReload?'1':'0';$('pEditAfterBuild').value=PROFILE.set.editAfterBuild??'1';$('pAutoConfirmEdit').value=PROFILE.set.autoConfirmEdit||'off';$('pTurboBuild').value=PROFILE.set.turboBuild??'1';$('pEditTooltip').value=PROFILE.set.editTooltip??'1';$('pVc').value=VC.on()?'1':'0';};
   $('pSens').oninput=e=>{SET.sens=+e.target.value;$('sens').value=e.target.value;$('pSensVal').textContent=SET.sens.toFixed(1);$('sensVal').textContent=SET.sens.toFixed(1);PROFILE.set.sens=SET.sens;saveProfile();};
   $('pFov').oninput=e=>{SET.fov=+e.target.value;$('fov').value=e.target.value;$('pFovVal').textContent=SET.fov;$('fovVal').textContent=SET.fov;PROFILE.set.fov=SET.fov;saveProfile();};
   $('pMus').oninput=e=>{setMusicVol(+e.target.value);$('mus').value=e.target.value;$('musVal').textContent=Math.round(MUSIC.vol*100)+'%';PROFILE.set.mus=MUSIC.vol;saveProfile();};
@@ -4774,7 +4853,10 @@ function initPauseUI(){let exitArm=0;
   $('pAa').onchange=e=>{SET.aa=+e.target.value;$('aa').value=e.target.value;PROFILE.set.aa=SET.aa;saveProfile();};
   $('pCam').onchange=e=>{SET.cam=+e.target.value;$('cam').value=e.target.value;PROFILE.set.cam=SET.cam;saveProfile();};
   $('pArl').onchange=e=>{SET.autoReload=e.target.value!=='0';$('arl').value=e.target.value;PROFILE.set.arl=e.target.value;saveProfile();};
+  $('pEditAfterBuild').onchange=e=>{$('editAfterBuild').value=e.target.value;PROFILE.set.editAfterBuild=e.target.value;saveProfile();};
   $('pAutoConfirmEdit').onchange=e=>{$('autoConfirmEdit').value=e.target.value;PROFILE.set.autoConfirmEdit=e.target.value;saveProfile();};
+  $('pTurboBuild').onchange=e=>{$('turboBuild').value=e.target.value;PROFILE.set.turboBuild=e.target.value;saveProfile();};
+  $('pEditTooltip').onchange=e=>{$('editTooltip').value=e.target.value;PROFILE.set.editTooltip=e.target.value;saveProfile();editHint(uiOpen==='edit');};
   $('pVc').value=VC.on()?'1':'0';$('pVc').onchange=e=>{PROFILE.set.vc=e.target.value;$('vc').value=e.target.value;saveProfile();if(!VC.on())VC.stop();};
   $('vc').addEventListener('input',()=>{$('pVc').value=$('vc').value;});
   $('pQual').onchange=e=>{const v=e.target.value;AQ.on=v==='auto';SET.quality=AQ.on?(TOUCH.on?'low':'high'):v;$('qual').value=v;applyQuality();PROFILE.set.qual=v;saveProfile();};
