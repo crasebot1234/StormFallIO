@@ -27,6 +27,8 @@ Your progress is saved automatically in your browser: level, XP, Storm Bucks, th
 
 Each browser keeps its own save. To move your progress to another browser or computer, open **Settings → Save**, click **Download save file**, then click **Load save file** on the other browser. Clearing your browser's site data deletes the save, so download a copy now and then.
 
+In the **Locker**, select an owned cosmetic to equip and customize it. Outfits, harvesting tools, gliders and sidekicks support separate colors, patterns, materials and visual effects; outfits, tools, gliders and sidekicks can also be randomized individually or as a full loadout. Save up to eight named cosmetic presets to quickly switch looks. Emotes can use their classic, hype or slow-motion style. Customizations are saved with your browser profile and can be reset per item. The Pocket Knife and animated Butterfly Knife harvesting tools are available in the Item Shop, and winning a match unlocks the Victory Umbrella glider.
+
 ## Game modes
 
 | Mode | What it is |
@@ -102,7 +104,7 @@ Open **Settings → Controls** to rebind match actions—including shoot, aim, i
 - **Bots:** they loot chests, llamas and supply drops, swap for better gear, heal, build cover, drive cars and chat (with optional voice).
 - **Ranked queue:** available in Battle Royale and No Build. Rank details appear when Ranked queue is enabled; bot difficulty is locked to Regular for Ranked matches.
 - **Sidekicks:** 100 pets that follow you and fight in short bursts. Seven can be bought; the rest hatch from Easter eggs. One per match, in Battle Royale and No Build only.
-- **Sprites:** ultra-rare elemental creatures (Air, Water, Fire, Earth) that give you a power for the match. Track the ones you've found in the Sprites tab.
+- **Sprites:** ultra-rare elemental creatures (Air, Water, Fire, Earth) that give you a power for the match. About half of the bots carry a randomly chosen sprite and level. Sprite XP and level travel with the sprite when it is dropped or swapped. Track the ones you've found in the Sprites tab.
 - **Shop and progress:** an Item Shop, Locker, Battle Pass, Career stats and Storm Bucks (150 for each win).
 - **Map editor:** sculpt hills, paint the ground, and place houses, towers, build pieces, cars, chests, loot llamas and named places. Sprites can only be earned, never placed.
 
